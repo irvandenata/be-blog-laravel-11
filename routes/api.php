@@ -30,6 +30,15 @@ Route::group([
          * route "/login"
          * @method "POST"
          */
-        Route::post('/login', App\Http\Controllers\Api\LoginController::class)->name('login');
+        Route::post('/login', App\Http\Controllers\Api\Auth\LoginController::class)->name('login');
     });
+
+    Route::group([
+        "prefix" => 'settings',
+        "middleware" => ['api-auth']
+    ], function () {
+        Route::get('/', [App\Http\Controllers\Api\SettingController::class, 'getData'])->name('get-data');
+    });
+
+
 });

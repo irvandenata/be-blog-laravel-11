@@ -14,7 +14,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // $middleware->add('auth', \App\Http\Middleware\Authenticate::class);
+        $middleware->appendToGroup('api-auth', [
+            \App\Http\Middleware\AuthMiddleware::class
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         $exceptions->render(function (NotFoundHttpException $e, Request $request) {
@@ -25,11 +27,11 @@ return Application::configure(basePath: dirname(__DIR__))
             }
         });
 
-        $exceptions->render(function (\Throwable $e, Request $request) {
-            // if ($request->is('api/*')) {
-            //     return response()->json([
-            //         'message' => 'Internal server error.'
-            //     ], 500);
-            // }
+        $exceptions->render(function (\Exception $e, Request $request) {
+            if ($request->is('api/*')) {
+                return response()->json([
+                    'message' => $e->getMessage()
+                ], $e->getCode() ?: 500);
+            }
         });
     })->create();

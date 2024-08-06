@@ -1,5 +1,5 @@
 <?php
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\Api\Auth;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -38,10 +38,16 @@ class LoginController extends Controller
         }
 
         //if auth success
+
+        // return cookie('token', $token, 60);
         return response()->json([
             'success' => true,
-            'user'    => auth()->guard('api')->user(),    
-            'token'   => $token   
+            'message' => 'Login berhasil',
+            'data' => [
+                'token' => $token,
+                'token_type' => 'bearer',
+                'expires_in' => auth()->guard('api')->factory()->getTTL() * 60
+            ]
         ], 200);
     }
 }
