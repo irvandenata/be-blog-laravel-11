@@ -11,12 +11,12 @@ use Illuminate\Http\Resources\Json\JsonResource;
 trait BaseCrudTrait
 {
     use ApiResponseTrait;
-
     private
     $service,
     $storeRequest,
     $updateRequest,
     $softDelete = false,
+    $slug,
     $resourceClass = BaseResource::class;
 
 
@@ -41,7 +41,6 @@ trait BaseCrudTrait
     public function store(Request $request): JsonResponse
     {
         try {
-
             if ($this->storeRequest) {
                 $validation = $this->storeRequest;
                 $validated = $request->validate($validation->rules(), $validation->messages());

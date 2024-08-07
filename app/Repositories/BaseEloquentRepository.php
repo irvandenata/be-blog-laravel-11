@@ -43,6 +43,13 @@ class BaseEloquentRepository
         DB::beginTransaction();
         try {
             $item = $this->model;
+            // check if has slug field
+            if (isset($request['slug'])) {
+                $checkSlug = $this->model->where('slug', $request['slug'])->first();
+                if ($checkSlug) {
+                   $request['slug'] = $request['slug'] . '-' . rand(1, 100);
+                }
+            }
             $item = $item->create($request);
             DB::commit();
             return $item;
@@ -74,6 +81,12 @@ class BaseEloquentRepository
         DB::beginTransaction();
         try {
             $item = $this->model->findOrFail($id);
+            if (isset($request['slug'])) {
+                $checkSlug = $this->model->where('slug', $request['slug'])->first();
+                if ($checkSlug && $checkSlug->id != $id) {
+                   $request['slug'] = $request['slug'] . '-' . rand(1, 100);
+                }
+            }
             $item->update($request);
             DB::commit();
             return $item;

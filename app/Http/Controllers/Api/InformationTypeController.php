@@ -19,6 +19,11 @@ class InformationTypeController extends Controller
         $updateFields = ['name'];
         $fileFields = [];
         $repository = new BaseEloquentRepository(new InformationType);
-        $this->service = new BaseService($repository, $storeFields, $updateFields, $fileFields, 'InformationType');
+        $options = [
+            'service' => 'CustomInformation',
+            'storeField' => $storeFields,
+            'updateField' => $updateFields,
+        ];
+        $this->service = new BaseService($repository, $options);
     }
 }

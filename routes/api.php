@@ -61,5 +61,15 @@ Route::group([
             Route::delete('/{id}', [App\Http\Controllers\Api\CustomInformationController::class, 'destroy']);
         });
 
+        Route::group([
+            "prefix" => 'article-categories',
+        ], function () {
+            Route::get('/', [App\Http\Controllers\Api\Article\CategoryController::class, 'index']);
+            Route::post('/', [App\Http\Controllers\Api\Article\CategoryController::class, 'store']);
+            Route::get('/{id}', [App\Http\Controllers\Api\Article\CategoryController::class, 'show']);
+            Route::patch('/{id}', [App\Http\Controllers\Api\Article\CategoryController::class, 'update']);
+            Route::delete('/{id}', [App\Http\Controllers\Api\Article\CategoryController::class, 'destroy']);
+        });
+
     });
 });

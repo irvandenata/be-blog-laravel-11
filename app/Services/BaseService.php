@@ -17,19 +17,25 @@ class BaseService
     protected $storeFields = [];
     protected $updateFields = [];
     protected $fileFields = [];
-    protected $serviceName;
 
-    public function __construct($repository, $storeFields = [], $updateFields = [], $fileFields = [], $serviceName)
+    protected $slug;
+    protected $serviceName;
+    protected $path;
+
+    public function __construct($repository, $options)
     {
 
+        $this->service = $repository;
         $this->repository = $repository;
         $this->perPage = request('per_page');
         $this->page = request('page');
         $this->search = request('search');
-        $this->storeFields = $storeFields;
-        $this->updateFields = $updateFields;
-        $this->serviceName = $serviceName;
-        $this->fileFields = $fileFields;
+        $this->slug = $options['slug']??null;
+        $this->storeFields =  $options['storeField'];
+        $this->updateFields =   $options['updateField'];
+        $this->serviceName = $options['service'];
+        $this->fileFields = $options['upload']['fields']??[];
+        $this->path = $options['upload']['path']??'';   
     }
 
     public function getData(Request $request)
@@ -52,12 +58,15 @@ class BaseService
                 }
             }
             $request = $this->settingPayload($request, 'store');
+            if ($this->slug) {
+                $request['slug'] = \Str::slug($request[$this->slug]);
+            }
             $data = $this->repository->store($request);
             return $data;
         } catch (\Throwable $th) {
-            foreach ($this->fileFields as $field) {
-                $this->deleteFile($request[$field]);
-            }
+            // foreach ($this->fileFields as $field) {
+            //     $this->deleteFile($request[$field]);
+            // }
             Log::warning($th->getMessage());
             throw $th;
         }
@@ -66,6 +75,7 @@ class BaseService
     public function update($id, $request)
     {
         try {
+
             foreach ($this->fileFields as $field) {
                 if ($request->hasFile($field)) {
                     $imagePath = $this->find($id)?->image ?? '';
@@ -73,6 +83,9 @@ class BaseService
                 }
             }
             $request = $this->settingPayload($request, 'update');
+            if ($this->slug) {
+                $request['slug'] = \Str::slug($request[$this->slug]);
+            }
             $data = $this->repository->update($id, $request);
             return $data;
         } catch (\Throwable $th) {
@@ -117,6 +130,7 @@ class BaseService
 
     protected function settingPayload($request, $type)
     {
+
         $data = $request->request->all();
         $setFields = $type == 'update' ? $this->updateFields : $this->storeFields;
         $data = array_filter($data, function ($key) use ($setFields) {
@@ -133,7 +147,7 @@ class BaseService
 
             //rand characters and numbers
             $fileName = $this->randomString(10) . '.webp';
-            $path = 'images/' . $this->serviceName . "/" . $fileName;
+            $path = 'images/' . $this->path . "/" . $fileName;
             Storage::disk('public')->put($path, $image);
             if (Storage::disk('public')->exists($imagePath)) {
                 Storage::disk('public')->delete($imagePath);
