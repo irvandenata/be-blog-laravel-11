@@ -33,12 +33,24 @@ Route::group([
         Route::post('/login', App\Http\Controllers\Api\Auth\LoginController::class)->name('login');
     });
 
-    Route::group([
-        "prefix" => 'settings',
-        "middleware" => ['api-auth']
-    ], function () {
-        Route::get('/', [App\Http\Controllers\Api\SettingController::class, 'getData'])->name('get-data');
+    Route::group(["middleware" => ['api-auth']], function () {
+        Route::group([
+            "prefix" => 'settings',
+        ], function () {
+            Route::get('/', [App\Http\Controllers\Api\SettingController::class, 'getData'])->name('get-data');
+            Route::post('/', [App\Http\Controllers\Api\SettingController::class, 'updateData'])->name('update-data');
+        });
+
+        Route::group([
+            "prefix" => 'information-types',
+        ], function () {
+            Route::get('/', [App\Http\Controllers\Api\CustomInformation\InformationTypeController::class, 'index']);
+            Route::post('/', [App\Http\Controllers\Api\CustomInformation\InformationTypeController::class, 'store']);
+            Route::get('/{id}', [App\Http\Controllers\Api\CustomInformation\InformationTypeController::class, 'show']);
+            Route::patch('/{id}', [App\Http\Controllers\Api\CustomInformation\InformationTypeController::class, 'update']);
+            Route::delete('/{id}', [App\Http\Controllers\Api\CustomInformation\InformationTypeController::class, 'destroy']);
+
+        });
+
     });
-
-
 });
