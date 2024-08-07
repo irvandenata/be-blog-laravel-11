@@ -22,7 +22,7 @@ class Resource extends JsonResource
     public function __construct($status, $message, $resource)
     {
         parent::__construct($resource);
-        $this->status  = $status;
+        $this->status = $status;
         $this->message = $message;
     }
 
@@ -33,10 +33,17 @@ class Resource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $data = $this->resource->toArray();
         return [
-            'success'   => $this->status,
-            'message'   => $this->message,
-            'data'      => $this->resource
+            'success' => $this->status,
+            'message' => $this->message,
+            'meta' => [
+                'total' => $data['total'],
+                'per_page' => $data['per_page'],
+                'current_page' => $data['current_page'],
+                'last_page' => $data['last_page'],
+            ],
+            'data' => CustomInformationResource::collection($this->resource->items())
         ];
     }
 }

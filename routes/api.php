@@ -44,12 +44,21 @@ Route::group([
         Route::group([
             "prefix" => 'information-types',
         ], function () {
-            Route::get('/', [App\Http\Controllers\Api\CustomInformation\InformationTypeController::class, 'index']);
-            Route::post('/', [App\Http\Controllers\Api\CustomInformation\InformationTypeController::class, 'store']);
-            Route::get('/{id}', [App\Http\Controllers\Api\CustomInformation\InformationTypeController::class, 'show']);
-            Route::patch('/{id}', [App\Http\Controllers\Api\CustomInformation\InformationTypeController::class, 'update']);
-            Route::delete('/{id}', [App\Http\Controllers\Api\CustomInformation\InformationTypeController::class, 'destroy']);
+            Route::get('/', [App\Http\Controllers\Api\InformationTypeController::class, 'index']);
+            Route::post('/', [App\Http\Controllers\Api\InformationTypeController::class, 'store']);
+            Route::get('/{id}', [App\Http\Controllers\Api\InformationTypeController::class, 'show']);
+            Route::patch('/{id}', [App\Http\Controllers\Api\InformationTypeController::class, 'update']);
+            Route::delete('/{id}', [App\Http\Controllers\Api\InformationTypeController::class, 'destroy']);
+        });
 
+        Route::group([
+            "prefix" => 'custom-informations',
+        ], function () {
+            Route::get('/', [App\Http\Controllers\Api\CustomInformationController::class, 'index']);
+            Route::post('/', [App\Http\Controllers\Api\CustomInformationController::class, 'store']);
+            Route::get('/{id}', [App\Http\Controllers\Api\CustomInformationController::class, 'show']);
+            Route::patch('/{id}', [App\Http\Controllers\Api\CustomInformationController::class, 'update']);
+            Route::delete('/{id}', [App\Http\Controllers\Api\CustomInformationController::class, 'destroy']);
         });
 
     });

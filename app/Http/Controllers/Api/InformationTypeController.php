@@ -1,13 +1,12 @@
 <?php
 
-namespace App\Http\Controllers\Api\CustomInformation;
+namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\InformationType;
 use App\Repositories\BaseEloquentRepository;
 use App\Traits\BaseCrudTrait;
 use App\Services\BaseService;
-use Illuminate\Http\Request;
 
 class InformationTypeController extends Controller
 {
@@ -18,7 +17,8 @@ class InformationTypeController extends Controller
     {
         $storeFields = ['name'];
         $updateFields = ['name'];
+        $fileFields = [];
         $repository = new BaseEloquentRepository(new InformationType);
-        $this->service = new BaseService($repository, $storeFields, $updateFields);
+        $this->service = new BaseService($repository, $storeFields, $updateFields, $fileFields, 'InformationType');
     }
 }
