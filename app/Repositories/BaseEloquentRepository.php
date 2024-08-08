@@ -27,9 +27,16 @@ class BaseEloquentRepository
         $this->with = $with;
     }
 
-    public function getData($perPage, $page): LengthAwarePaginator
+    public function getData($perPage, $page, $search = '', $searchField = []): LengthAwarePaginator
     {
         $data = $this->model;
+        if ($search) {
+            $data = $data->where(function ($query) use ($search, $searchField) {
+                foreach ($searchField as $field) {
+                    $query->orWhere($field, 'like', '%' . $search . '%');
+                }
+            });
+        }
         if (count($this->with) > 0) {
             $data = $data->with($this->with);
         }
@@ -53,14 +60,13 @@ class BaseEloquentRepository
             if (isset($request['slug'])) {
                 $checkSlug = $this->model->where('slug', $request['slug'])->first();
                 if ($checkSlug) {
-                   $request['slug'] = $request['slug'] . '-' . rand(1, 100);
+                    $request['slug'] = $request['slug'] . '-' . rand(1, 100);
                 }
             }
             $item = $item->create($request);
             DB::commit();
             return $item;
-        }
-        catch (\Exception $e) {
+        } catch (\Exception $e) {
             DB::rollBack();
             throw $e;
         }
@@ -82,7 +88,7 @@ class BaseEloquentRepository
      * @param Request $request Illuminate\Http\Request
      * @return send updated item object.
      */
-    public function update($id,$request): Model
+    public function update($id, $request): Model
     {
         DB::beginTransaction();
         try {
@@ -90,7 +96,7 @@ class BaseEloquentRepository
             if (isset($request['slug'])) {
                 $checkSlug = $this->model->where('slug', $request['slug'])->first();
                 if ($checkSlug && $checkSlug->id != $id) {
-                   $request['slug'] = $request['slug'] . '-' . rand(1, 100);
+                    $request['slug'] = $request['slug'] . '-' . rand(1, 100);
                 }
             }
             $item->update($request);
@@ -161,7 +167,7 @@ class BaseEloquentRepository
     {
         DB::beginTransaction();
         try {
-            
+
             $item = $this->model->findOrFail($id);
             $item->deleted_by = auth()->user()->id;
             $item->delete();
@@ -186,7 +192,7 @@ class BaseEloquentRepository
     public function appendRelation($model, $data)
     {
         foreach ($data as $key => $value) {
-           $model->$key()->sync($value);
+            $model->$key()->sync($value);
         }
         return $model;
     }

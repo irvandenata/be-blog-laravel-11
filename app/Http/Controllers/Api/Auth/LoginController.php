@@ -17,8 +17,8 @@ class LoginController extends Controller
     {
         //set validation
         $validator = Validator::make($request->all(), [
-            'email'     => 'required',
-            'password'  => 'required'
+            'email' => 'required',
+            'password' => 'required'
         ]);
 
         //if validation fails
@@ -30,7 +30,7 @@ class LoginController extends Controller
         $credentials = $request->only('email', 'password');
 
         //if auth failed
-        if(!$token = auth()->guard('api')->attempt($credentials)) {
+        if (!$token = auth()->guard('api')->attempt($credentials)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Email atau Password Anda salah'
@@ -46,7 +46,38 @@ class LoginController extends Controller
             'data' => [
                 'token' => $token,
                 'token_type' => 'bearer',
-                'expires_in' => auth()->guard('api')->factory()->getTTL() * 60
+                'expires_in' => auth()->guard('api')->factory()->getTTL() * 60,
+            ]
+        ], 200);
+    }
+
+    public function logout()
+    {
+        $removeToken = \JWTAuth::invalidate(\JWTAuth::getToken());
+        if ($removeToken) {
+            //return response JSON
+            return response()->json([
+                'success' => true,
+                'message' => 'Logout Berhasil!',
+            ]);
+        } else {
+            //return response JSON
+            return response()->json([
+                'success' => false,
+                'message' => 'Logout Gagal!',
+            ]);
+        }
+    }
+
+    public function refresh()
+    {
+        return response()->json([
+            'success' => true,
+            'message' => 'Token berhasil diperbaharui',
+            'data' => [
+                'token' => auth()->guard('api')->refresh(),
+                'token_type' => 'bearer',
+                'expires_in' => auth()->guard('api')->factory()->getTTL() * 60,
             ]
         ], 200);
     }

@@ -2,8 +2,6 @@
 
 use Illuminate\Support\Facades\Route;
 
-
-
 Route::get('/', function () {
     return response()->json(['message' => 'this is api route']);
 });
@@ -31,7 +29,14 @@ Route::group([
          * @method "POST"
          */
         Route::post('/login', App\Http\Controllers\Api\Auth\LoginController::class)->name('login');
+        Route::get('refresh/{token}', [App\Http\Controllers\Api\Auth\LoginController::class,'refresh'])->middleware('api-auth');
+        Route::get('logout', [App\Http\Controllers\Api\Auth\LoginController::class,'logout'])->name('logout')->middleware('api-auth');
     });
+
+    Route::get('/data/settings', [App\Http\Controllers\Api\SettingController::class, 'getData'])->name('get-data');
+    Route::get('/data/article-categories', [App\Http\Controllers\Api\Article\CategoryController::class, 'index']);
+    Route::get('/data/article-tags', [App\Http\Controllers\Api\Article\TagController::class, 'index']);
+    Route::get('/data/articles', [App\Http\Controllers\Api\Article\ArticleController::class, 'index']);
 
     Route::group(["middleware" => ['api-auth']], function () {
         Route::group([
@@ -91,7 +96,25 @@ Route::group([
             Route::get('/{id}', [App\Http\Controllers\Api\Article\ArticleController::class, 'show']);
             Route::patch('/{id}', [App\Http\Controllers\Api\Article\ArticleController::class, 'update']);
             Route::delete('/{id}', [App\Http\Controllers\Api\Article\ArticleController::class, 'destroy']);
+            Route::post('/{id}/image-upload', [App\Http\Controllers\Api\Article\ArticleController::class, 'storeImage']);
+            Route::delete('/{id}/image/{idImage}', [App\Http\Controllers\Api\Article\ArticleController::class, 'deleteImage']);
+        });
+    });
+
+        // route artisan
+        Route::get('/clear-cache', function () {
+            Artisan::call('cache:clear');
+            Artisan::call('config:clear');
+            Artisan::call('route:clear');
+            return response()->json(['message' => 'cache cleared']);
         });
 
-    });
+        Route::get('/migrate', function () {
+            Artisan::call('migrate');
+            return response()->json(['message' => 'migrate success']);
+        });
+        Route::get('/seed', function () {
+            Artisan::call('db:seed');
+            return response()->json(['message' => 'seed success']);
+        });
 });

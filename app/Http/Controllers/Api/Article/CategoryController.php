@@ -30,6 +30,7 @@ class CategoryController extends Controller
             ],
             'storeField' => $storeFields,
             'updateField' => $updateFields,
+            'searchField' => ['name'],
         ];
         $this->service = new BaseService($repository, $options);
     }

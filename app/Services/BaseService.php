@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Intervention\Image\Laravel\Facades\Image;
 use Storage;
+use Str;
 
 class BaseService
 {
@@ -18,6 +19,7 @@ class BaseService
     protected $updateFields = [];
     protected $fileFields = [];
     protected $appendRelation = [];
+    protected $searchField = [];
 
     protected $slug;
     protected $serviceName;
@@ -38,12 +40,13 @@ class BaseService
         $this->fileFields = $options['upload']['fields'] ?? [];
         $this->path = $options['upload']['path'] ?? '';
         $this->appendRelation = $options['appendRelation'] ?? [];
+        $this->searchField = $options['searchField'] ?? [];
     }
 
     public function getData(Request $request)
     {
         try {
-            $data = $this->repository->getData($this->perPage, $this->page, $this->search, $request);
+            $data = $this->repository->getData($this->perPage, $this->page, $request->search, $this->searchField);
             return $data;
         } catch (\Throwable $th) {
             Log::warning($th->getMessage());
@@ -182,7 +185,10 @@ class BaseService
                 ->toWebp();
             //rand characters and numbers
             $fileName = $this->randomString(10) . '.webp';
-            $path = 'images/' . $this->path . "/" . $fileName;
+            if ($this->path)
+                $path = 'images/' . $this->path . "/" . $fileName;
+            else
+                $path = 'images/' . Str::lower($this->serviceName) . "/" . $fileName;
             Storage::disk('public')->put($path, $image);
             if (Storage::disk('public')->exists($imagePath)) {
                 Storage::disk('public')->delete($imagePath);

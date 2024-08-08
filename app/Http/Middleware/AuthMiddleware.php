@@ -16,12 +16,13 @@ class AuthMiddleware
     public function handle(Request $request, Closure $next): Response
     {
         //check if user is authenticated
-        if (!auth()->guard('api')->check()) {
+        if (!auth()->guard('api')->check() || !auth()->guard('api')->user()->role == 'admin') {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthorized'
             ], 401);
         }
+        // get expried token time
         return $next($request);
     }
 }

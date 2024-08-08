@@ -25,6 +25,7 @@ class TagController extends Controller
             'slug' =>'name',
             'storeField' => $storeFields,
             'updateField' => $updateFields,
+            'searchField' => ['name'],
         ];
         $this->service = new BaseService($repository, $options);
     }
