@@ -117,4 +117,9 @@ Route::group([
             Artisan::call('db:seed');
             return response()->json(['message' => 'seed success']);
         });
+
+        Route::get('/storage-link', function () {
+            Artisan::call('storage:link');
+            return response()->json(['message' => 'storage link success']);
+        });
 });
