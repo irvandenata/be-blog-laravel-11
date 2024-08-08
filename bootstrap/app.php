@@ -15,7 +15,12 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->appendToGroup('api-auth', [
-            \App\Http\Middleware\AuthMiddleware::class
+            \App\Http\Middleware\AuthMiddleware::class,
+        ]);
+
+        // cors middleware
+        $middleware->appendToGroup('api', [
+            \App\Http\Middleware\CorsMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
@@ -26,7 +31,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 ], 404);
             }
         });
-        
+
         $exceptions->render(function (\Exception $e, Request $request) {
             if ($request->is('api/*')) {
                 return response()->json([
