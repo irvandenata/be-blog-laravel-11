@@ -71,5 +71,27 @@ Route::group([
             Route::delete('/{id}', [App\Http\Controllers\Api\Article\CategoryController::class, 'destroy']);
         });
 
+
+        Route::group([
+            "prefix" => 'article-tags',
+        ], function () {
+            Route::get('/', [App\Http\Controllers\Api\Article\TagController::class, 'index']);
+            Route::post('/', [App\Http\Controllers\Api\Article\TagController::class, 'store']);
+            Route::get('/{id}', [App\Http\Controllers\Api\Article\TagController::class, 'show']);
+            Route::patch('/{id}', [App\Http\Controllers\Api\Article\TagController::class, 'update']);
+            Route::delete('/{id}', [App\Http\Controllers\Api\Article\TagController::class, 'destroy']);
+        });
+
+
+        Route::group([
+            "prefix" => 'articles',
+        ], function () {
+            Route::get('/', [App\Http\Controllers\Api\Article\ArticleController::class, 'index']);
+            Route::post('/', [App\Http\Controllers\Api\Article\ArticleController::class, 'store']);
+            Route::get('/{id}', [App\Http\Controllers\Api\Article\ArticleController::class, 'show']);
+            Route::patch('/{id}', [App\Http\Controllers\Api\Article\ArticleController::class, 'update']);
+            Route::delete('/{id}', [App\Http\Controllers\Api\Article\ArticleController::class, 'destroy']);
+        });
+
     });
 });

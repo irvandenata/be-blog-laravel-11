@@ -10,6 +10,7 @@ class Resource extends JsonResource
     //define properti
     public $status;
     public $message;
+    protected $customResource;
 
     /**
      * __construct
@@ -19,11 +20,12 @@ class Resource extends JsonResource
      * @param  mixed $resource
      * @return void
      */
-    public function __construct($status, $message, $resource)
+    public function __construct($status, $message, $resource,$customResource = null)
     {
         parent::__construct($resource);
         $this->status = $status;
         $this->message = $message;
+        $this->customResource = $customResource;
     }
 
     /**
@@ -43,7 +45,7 @@ class Resource extends JsonResource
                 'current_page' => $data['current_page'],
                 'last_page' => $data['last_page'],
             ],
-            'data' => CustomInformationResource::collection($this->resource->items())
+            'data' => $this->customResource ? $this->customResource::collection($this->resource->items()) : $data['data'],
         ];
     }
 }

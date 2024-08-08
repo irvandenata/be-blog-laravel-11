@@ -17,6 +17,7 @@ class BaseService
     protected $storeFields = [];
     protected $updateFields = [];
     protected $fileFields = [];
+    protected $appendRelation = [];
 
     protected $slug;
     protected $serviceName;
@@ -30,12 +31,13 @@ class BaseService
         $this->perPage = request('per_page');
         $this->page = request('page');
         $this->search = request('search');
-        $this->slug = $options['slug']??null;
-        $this->storeFields =  $options['storeField'];
-        $this->updateFields =   $options['updateField'];
+        $this->slug = $options['slug'] ?? null;
+        $this->storeFields = $options['storeField'];
+        $this->updateFields = $options['updateField'];
         $this->serviceName = $options['service'];
-        $this->fileFields = $options['upload']['fields']??[];
-        $this->path = $options['upload']['path']??'';   
+        $this->fileFields = $options['upload']['fields'] ?? [];
+        $this->path = $options['upload']['path'] ?? '';
+        $this->appendRelation = $options['appendRelation'] ?? [];
     }
 
     public function getData(Request $request)
@@ -52,21 +54,33 @@ class BaseService
     public function store($request)
     {
         try {
+            $dataAppend = [];
             foreach ($this->fileFields as $field) {
                 if ($request->hasFile($field)) {
                     $request[$field] = $this->storeFile($request, $field);
                 }
             }
+
+            if (count($this->appendRelation) > 0) {
+                foreach ($this->appendRelation as $relation) {
+                    $dataAppend[$relation] = $request[$relation];
+                    unset($request[$relation]);
+                }
+            }
+
             $request = $this->settingPayload($request, 'store');
             if ($this->slug) {
                 $request['slug'] = \Str::slug($request[$this->slug]);
             }
             $data = $this->repository->store($request);
+            if ($dataAppend) {
+                $data = $this->repository->appendRelation($data, $dataAppend);
+            }
             return $data;
         } catch (\Throwable $th) {
-            // foreach ($this->fileFields as $field) {
-            //     $this->deleteFile($request[$field]);
-            // }
+            foreach ($this->fileFields as $field) {
+                $this->deleteFile($request[$field]);
+            }
             Log::warning($th->getMessage());
             throw $th;
         }
@@ -75,18 +89,31 @@ class BaseService
     public function update($id, $request)
     {
         try {
-
+            $dataAppend = [];
             foreach ($this->fileFields as $field) {
                 if ($request->hasFile($field)) {
                     $imagePath = $this->find($id)?->image ?? '';
                     $request[$field] = $this->storeFile($request, $field, $imagePath);
                 }
             }
+
+            if (count($this->appendRelation) > 0) {
+                foreach ($this->appendRelation as $relation) {
+                    $dataAppend[$relation] = $request[$relation];
+                    unset($request[$relation]);
+                }
+            }
+
             $request = $this->settingPayload($request, 'update');
             if ($this->slug) {
                 $request['slug'] = \Str::slug($request[$this->slug]);
             }
+
+
             $data = $this->repository->update($id, $request);
+            if ($dataAppend) {
+                $data = $this->repository->appendRelation($data, $dataAppend);
+            }
             return $data;
         } catch (\Throwable $th) {
             foreach ($this->fileFields as $field) {
@@ -121,6 +148,16 @@ class BaseService
     {
         try {
             $data = $this->repository->destroy($id);
+            foreach ($this->fileFields as $field) {
+                if ($data->$field) {
+                    $this->deleteFile($data->$field);
+                }
+            }
+            if (count($this->appendRelation) > 0) {
+                foreach ($this->appendRelation as $relation) {
+                    $this->repository->removeAllRelation($data, $relation);
+                }
+            }
             return $data;
         } catch (\Throwable $th) {
             Log::warning($th->getMessage());
@@ -130,7 +167,6 @@ class BaseService
 
     protected function settingPayload($request, $type)
     {
-
         $data = $request->request->all();
         $setFields = $type == 'update' ? $this->updateFields : $this->storeFields;
         $data = array_filter($data, function ($key) use ($setFields) {
@@ -144,7 +180,6 @@ class BaseService
         if ($request->hasFile($field)) {
             $image = Image::read($request->file($field))
                 ->toWebp();
-
             //rand characters and numbers
             $fileName = $this->randomString(10) . '.webp';
             $path = 'images/' . $this->path . "/" . $fileName;
@@ -175,4 +210,6 @@ class BaseService
         }
         return $randomString;
     }
+
+
 }

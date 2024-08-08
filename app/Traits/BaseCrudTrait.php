@@ -29,7 +29,7 @@ trait BaseCrudTrait
     public function index(Request $request): JsonResource
     {
         $query = $this->service->getData($request);
-        return new Resource(true, 'Data retrieved successfully', $query);
+        return new Resource(true, 'Data retrieved successfully', $query, $this->resourceClass);
     }
 
     /**

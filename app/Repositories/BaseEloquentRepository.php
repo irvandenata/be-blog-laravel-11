@@ -14,20 +14,26 @@ class BaseEloquentRepository
      * Eloquent model instance.
      */
     protected $model;
+    protected $with = [];
 
     /**
      * load default class dependencies.
      * 
      * @param Model $model Illuminate\Database\Eloquent\Model
      */
-    public function __construct(Model $model)
+    public function __construct(Model $model, $with = [])
     {
         $this->model = $model;
+        $this->with = $with;
     }
 
     public function getData($perPage, $page): LengthAwarePaginator
     {
-        $data = $this->model->paginate($perPage);
+        $data = $this->model;
+        if (count($this->with) > 0) {
+            $data = $data->with($this->with);
+        }
+        $data = $data->paginate($perPage, ['*'], 'page', $page);
         // $this->logActivity('retrieved');
         return $data;
     }
@@ -175,6 +181,20 @@ class BaseEloquentRepository
     public function with($relations)
     {
         return $this->model->with($relations);
+    }
+
+    public function appendRelation($model, $data)
+    {
+        foreach ($data as $key => $value) {
+           $model->$key()->sync($value);
+        }
+        return $model;
+    }
+
+    public function removeAllRelation($model, $relation)
+    {
+        $model->$relation()->detach();
+        return $model;
     }
     protected function logActivity($type, $model = null)
     {
