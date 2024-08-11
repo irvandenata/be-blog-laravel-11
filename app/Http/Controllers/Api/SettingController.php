@@ -22,7 +22,7 @@ class SettingController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'this is setting data',
-            'data' => $data
+            'data' => $data,
         ], 200);
     }
 
@@ -47,15 +47,16 @@ class SettingController extends Controller
             "header" => [
                 'title' => $request->header_title,
                 'description' => $request->header_description,
-                'image' => $imagePath,
-            ]
+                'image' => env('APP_URL') . '/storage/' . $imagePath,
+            ],
         ];
         // write setting.json from public folder
+        file_put_contents(public_path('setting.json'), json_encode($data, JSON_PRETTY_PRINT));
 
         return response()->json([
             'success' => true,
             'message' => 'setting data updated',
-            'data' => $data
+            'data' => $data,
         ], 200);
     }
 }
