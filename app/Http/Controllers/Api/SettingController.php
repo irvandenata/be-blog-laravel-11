@@ -40,14 +40,14 @@ class SettingController extends Controller
             if (Storage::disk('public')->exists($imagePath)) {
                 Storage::disk('public')->delete($imagePath);
             }
-            $imagePath = $path;
+            $imagePath = env('APP_URL') . '/storage/' .$path;
         }
 
         $data = [
             "header" => [
                 'title' => $request->header_title,
                 'description' => $request->header_description,
-                'image' => env('APP_URL') . '/storage/' . $imagePath,
+                'image' =>  $imagePath,
             ],
         ];
         // write setting.json from public folder

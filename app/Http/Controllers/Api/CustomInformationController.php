@@ -13,13 +13,16 @@ class CustomInformationController extends Controller
 {
     protected $storeFields;
     protected $updateFields;
+    protected $with;
+
     use BaseCrudTrait;
     public function __construct()
     {
         $storeFields = ['title', 'information_type_id', 'subtitle', 'description', 'image', 'icon', 'link', 'start_date', 'end_date'];
         $updateFields = ['title', 'information_type_id', 'subtitle', 'description', 'image', 'icon', 'link', 'start_date', 'end_date'];
         $fileFields = ['image'];
-        $repository = new BaseEloquentRepository(new CustomInformation);
+        $this->with = ['category', 'tags','images'];
+        $repository = new BaseEloquentRepository(new CustomInformation, $this->with);
         $this->resourceClass = CustomInformationResource::class;
         $options = [
             'service' => 'CustomInformation',
