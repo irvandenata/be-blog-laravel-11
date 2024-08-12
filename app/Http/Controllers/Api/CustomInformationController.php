@@ -21,7 +21,7 @@ class CustomInformationController extends Controller
         $storeFields = ['title', 'information_type_id', 'subtitle', 'description', 'image', 'icon', 'link', 'start_date', 'end_date'];
         $updateFields = ['title', 'information_type_id', 'subtitle', 'description', 'image', 'icon', 'link', 'start_date', 'end_date'];
         $fileFields = ['image'];
-        $this->with = ['category', 'tags','images'];
+        $this->with = ['type'];
         $repository = new BaseEloquentRepository(new CustomInformation, $this->with);
         $this->resourceClass = CustomInformationResource::class;
         $options = [

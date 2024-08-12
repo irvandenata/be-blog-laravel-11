@@ -46,7 +46,8 @@ class BaseService
     public function getData(Request $request)
     {
         try {
-            $data = $this->repository->getData($this->perPage, $this->page, $request->search, $this->searchField);
+            $allData = $request->all_data ? true : false;
+            $data = $this->repository->getData($this->perPage, $this->page, $request->search, $this->searchField, $allData);
             return $data;
         } catch (\Throwable $th) {
             Log::warning($th->getMessage());

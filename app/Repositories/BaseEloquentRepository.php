@@ -18,7 +18,7 @@ class BaseEloquentRepository
 
     /**
      * load default class dependencies.
-     * 
+     *
      * @param Model $model Illuminate\Database\Eloquent\Model
      */
     public function __construct(Model $model, $with = [])
@@ -27,7 +27,7 @@ class BaseEloquentRepository
         $this->with = $with;
     }
 
-    public function getData($perPage, $page, $search = '', $searchField = []): LengthAwarePaginator
+    public function getData($perPage, $page, $search = '', $searchField = [], $allData = false): LengthAwarePaginator
     {
         $data = $this->model;
         if ($search) {
@@ -40,15 +40,18 @@ class BaseEloquentRepository
         if (count($this->with) > 0) {
             $data = $data->with($this->with);
         }
-        $data = $data->paginate($perPage, ['*'], 'page', $page);
-        // $this->logActivity('retrieved');
+        if ($allData) {
+            $data = $data->paginate($data->count(), ['*'], 'page', $page);
+        } else {
+            $data = $data->paginate($perPage, ['*'], 'page', $page);
+        }
         return $data;
     }
 
     /**
      * create new record in database.
-     * 
-     * @param array $request 
+     *
+     * @param array $request
      * @return Model
      */
     public function store($request): Model
@@ -83,7 +86,7 @@ class BaseEloquentRepository
 
     /**
      * update existing item.
-     * 
+     *
      * @param  Integer $id integer item primary key.
      * @param Request $request Illuminate\Http\Request
      * @return send updated item object.
@@ -120,7 +123,7 @@ class BaseEloquentRepository
 
     /**
      * get requested item and send back.
-     * 
+     *
      * @param  Integer $id: integer primary key value.
      * @return send requested item data.
      */
@@ -135,7 +138,7 @@ class BaseEloquentRepository
 
     /**
      * Delete item by primary key id.
-     * 
+     *
      * @param  Integer $id integer of primary key id.
      * @return boolean
      */
@@ -159,7 +162,7 @@ class BaseEloquentRepository
     }
     /**
      * Delete item by primary key id.
-     * 
+     *
      * @param  Integer $id integer of primary key id.
      * @return boolean
      */

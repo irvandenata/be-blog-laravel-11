@@ -10,4 +10,8 @@ class CustomInformation extends Model
     use HasFactory;
     protected $table = 'custom_informations';
     protected $guarded = [];
+    public function type()
+    {
+        return $this->belongsTo(InformationType::class, 'information_type_id');
+    }
 }

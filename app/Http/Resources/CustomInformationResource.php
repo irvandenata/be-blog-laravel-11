@@ -16,6 +16,8 @@ class CustomInformationResource extends JsonResource
     {
         return [
             ...$this->resource->toArray(),
+            "type" => $this->resource->type ? $this->resource->type->name : null,
+            "type_id" => $this->resource->type ? $this->resource->type->id : null,
             "image_url" => $this->resource->image ? asset("storage/{$this->resource->image}") : null,
         ];
     }
