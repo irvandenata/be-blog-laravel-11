@@ -64,14 +64,12 @@ class BaseService
                     $request[$field] = $this->storeFile($request, $field);
                 }
             }
-
             if (count($this->appendRelation) > 0) {
                 foreach ($this->appendRelation as $relation) {
                     $dataAppend[$relation] = $request[$relation];
                     unset($request[$relation]);
                 }
             }
-
             $request = $this->settingPayload($request, 'store');
             if ($this->slug) {
                 $request['slug'] = \Str::slug($request[$this->slug]);
@@ -83,7 +81,10 @@ class BaseService
             return $data;
         } catch (\Throwable $th) {
             foreach ($this->fileFields as $field) {
-                $this->deleteFile($request[$field]);
+                if (isset($request[$field])) {
+                    $this->deleteFile($request[$field]);
+                }
+
             }
             Log::warning($th->getMessage());
             throw $th;
@@ -113,14 +114,13 @@ class BaseService
                 $request['slug'] = \Str::slug($request[$this->slug]);
             }
 
-
             $data = $this->repository->update($id, $request);
             if ($dataAppend) {
                 $data = $this->repository->appendRelation($data, $dataAppend);
             }
             return $data;
         } catch (\Throwable $th) {
-            foreach ($this->fileFields as $field) {
+            if (isset($request[$field])) {
                 $this->deleteFile($request[$field]);
             }
             Log::warning($th->getMessage());
@@ -186,10 +186,12 @@ class BaseService
                 ->toWebp();
             //rand characters and numbers
             $fileName = $this->randomString(10) . '.webp';
-            if ($this->path)
+            if ($this->path) {
                 $path = 'images/' . $this->path . "/" . $fileName;
-            else
+            } else {
                 $path = 'images/' . Str::lower($this->serviceName) . "/" . $fileName;
+            }
+
             Storage::disk('public')->put($path, $image);
             if (Storage::disk('public')->exists($imagePath)) {
                 Storage::disk('public')->delete($imagePath);
@@ -201,11 +203,11 @@ class BaseService
 
     protected function deleteFile($imagePath)
     {
+
         if (Storage::disk('public')->exists($imagePath)) {
             Storage::disk('public')->delete($imagePath);
         }
     }
-
 
     protected function randomString($length = 10)
     {
@@ -217,6 +219,5 @@ class BaseService
         }
         return $randomString;
     }
-
 
 }

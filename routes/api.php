@@ -36,6 +36,7 @@ Route::group([
     Route::get('/data/settings', [App\Http\Controllers\Api\SettingController::class, 'getData'])->name('get-data');
     Route::get('/data/article-categories', [App\Http\Controllers\Api\Article\CategoryController::class, 'index']);
     Route::get('/data/article-tags', [App\Http\Controllers\Api\Article\TagController::class, 'index']);
+    Route::get('/data/custom-informations', [App\Http\Controllers\Api\CustomInformationController::class, 'index']);
     Route::get('/data/articles', [App\Http\Controllers\Api\Article\ArticleController::class, 'index']);
 
     Route::group(["middleware" => ['api-auth']], function () {
@@ -121,5 +122,10 @@ Route::group([
         Route::get('/storage-link', function () {
             Artisan::call('storage:link');
             return response()->json(['message' => 'storage link success']);
+        });
+
+        Route::get('/fresh-data', function () {
+            Artisan::call('migrate:fresh --seed');
+            return response()->json(['message' => 'fresh data success']);
         });
 });

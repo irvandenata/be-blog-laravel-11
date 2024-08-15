@@ -19,7 +19,7 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->boolean('is_active')->default(true);
             $table->string('image')->nullable();
-            $table->string('icon')->nullable();
+            $table->text('icon')->nullable();
             $table->string('link')->nullable();
             $table->date('start_date')->nullable();
             $table->date('end_date')->nullable();

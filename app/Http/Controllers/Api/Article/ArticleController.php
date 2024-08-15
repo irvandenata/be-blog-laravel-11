@@ -5,10 +5,9 @@ namespace App\Http\Controllers\Api\Article;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ArticleResource;
 use App\Models\Article;
-use App\Repositories\BaseEloquentRepository;
+use App\Repositories\ArticleEloquentRepository;
 use App\Services\ArticleService;
 use App\Traits\BaseCrudTrait;
-use App\Services\BaseService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 class ArticleController extends Controller
@@ -20,16 +19,21 @@ class ArticleController extends Controller
     use BaseCrudTrait;
     public function __construct()
     {
-        $storeFields = ['title','content','category_id'];
-        $updateFields = ['title','content','category_id'];
+        $storeFields = ['title','content','category_id','image','status'];
+        $updateFields = ['title','content','category_id','image','status'];
         $appendRelation = ['tags'];
         $this->with = ['category', 'tags','images'];
         $this->imageField = 'image';
-        $repository = new BaseEloquentRepository(new Article(), $this->with);
+        $fileFields = ['image'];
+        $repository = new ArticleEloquentRepository(new Article(), $this->with);
         $this->resourceClass = ArticleResource::class;
         $options = [
             'service' => 'Article',
             'slug' =>'title',
+            'upload' => [
+                'fields' => $fileFields,
+                'path' => 'article',
+            ],
             'storeField' => $storeFields,
             'updateField' => $updateFields,
             'appendRelation' => $appendRelation,
@@ -48,6 +52,7 @@ class ArticleController extends Controller
     {
         try {
             $payload = $this->service->storeImage($request, $this->imageField,$id);
+
             return $this->successResponse(new $this->resourceClass($payload), 'Image Article has been uploaded successfully.');
         } catch (\Exception $th) {
             return $this->errorResponse($th->getMessage(), 500);

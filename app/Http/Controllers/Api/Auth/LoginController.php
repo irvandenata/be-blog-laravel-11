@@ -30,6 +30,7 @@ class LoginController extends Controller
         $credentials = $request->only('email', 'password');
 
         //if auth failed
+
         if (!$token = auth()->guard('api')->attempt($credentials)) {
             return response()->json([
                 'success' => false,
@@ -37,8 +38,17 @@ class LoginController extends Controller
             ], 401);
         }
 
-        //if auth success
 
+        $user = auth()->guard('api')->user();
+
+        //if auth success
+        $customClaims = [
+            'user_id' => $user->id,
+            'email' => $user->email,
+            'name' => $user->name
+        ];
+
+        $token = auth()->guard('api')->claims($customClaims)->attempt($credentials);
         // return cookie('token', $token, 60);
         return response()->json([
             'success' => true,

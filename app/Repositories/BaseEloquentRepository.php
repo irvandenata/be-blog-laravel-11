@@ -27,7 +27,7 @@ class BaseEloquentRepository
         $this->with = $with;
     }
 
-    public function getData($perPage, $page, $search = '', $searchField = [], $allData = false): LengthAwarePaginator
+    public function getData($perPage, $page, $search = '', $searchField = [], $allData = false, $filter = []): LengthAwarePaginator
     {
         $data = $this->model;
         if ($search) {
@@ -37,8 +37,30 @@ class BaseEloquentRepository
                 }
             });
         }
+
         if (count($this->with) > 0) {
             $data = $data->with($this->with);
+        }
+        if (count($filter) > 0) {
+            foreach ($filter as $value) {
+                if ($value['type'] == 'array_text') {
+                    $data = $data->where(function ($query) use ($value) {
+                        foreach ($value['value'] as $val) {
+                            $query->orWhere($value['column'], 'like', '%' . $val . '%');
+                        }
+                    });
+                    foreach ($value['value'] as $val) {
+
+                    }
+                } else if ($value['type'] == 'single') {
+                    $data = $data->where($value['column'], $value['value']);
+                } else if ($value['type'] == 'latest') {
+                    $data = $data->orderBy($value['column'], 'desc');
+                }
+            }
+        }
+        if (auth()->user() ? auth()->user()->role == 'user' : false) {
+            $data = $data->where('status', 'published');
         }
         if ($allData) {
             $data = $data->paginate($data->count(), ['*'], 'page', $page);
@@ -59,6 +81,7 @@ class BaseEloquentRepository
         DB::beginTransaction();
         try {
             $item = $this->model;
+
             // check if has slug field
             if (isset($request['slug'])) {
                 $checkSlug = $this->model->where('slug', $request['slug'])->first();
@@ -66,7 +89,9 @@ class BaseEloquentRepository
                     $request['slug'] = $request['slug'] . '-' . rand(1, 100);
                 }
             }
+
             $item = $item->create($request);
+
             DB::commit();
             return $item;
         } catch (\Exception $e) {
@@ -130,7 +155,11 @@ class BaseEloquentRepository
     public function findById($id): Model
     {
         try {
-            return $this->model->findOrFail($id);
+            $data = $this->model;
+            if (count($this->with) > 0) {
+                $data = $data->with($this->with);
+            }
+            return $data->findOrFail($id);
         } catch (\Exception $e) {
             throw $e;
         }

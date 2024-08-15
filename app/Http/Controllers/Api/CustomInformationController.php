@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\CustomInformationResource;
 use App\Models\CustomInformation;
 use App\Repositories\BaseEloquentRepository;
+use App\Services\CustomInformationService;
 use App\Traits\BaseCrudTrait;
 use App\Services\BaseService;
 
@@ -33,6 +34,6 @@ class CustomInformationController extends Controller
             'storeField' => $storeFields,
             'updateField' => $updateFields,
         ];
-        $this->service = new BaseService($repository, $options);
+        $this->service = new CustomInformationService($repository, $options);
     }
 }

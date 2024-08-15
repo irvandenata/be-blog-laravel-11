@@ -15,7 +15,9 @@ class ArticleResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            ...$this->resource->toArray(),
+             ...$this->resource->toArray(),
+            "image_url" => count($this->resource->images )? env('APP_URL') . '/storage/' . $this->resource->images->first()?->image : null,
+            'category_name' => $this->category?->name,
         ];
     }
 }
