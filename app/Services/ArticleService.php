@@ -77,6 +77,17 @@ class ArticleService extends BaseService
         }
     }
 
+    public function getDataBySlug(string $slug)
+    {
+        try {
+            $data = $this->repository->getDataBySlug($slug);
+            return $data;
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+
+    }
+
 
     public function update($id, $request)
     {
@@ -106,7 +117,7 @@ class ArticleService extends BaseService
             if ($dataAppend) {
                 $data = $this->repository->appendRelation($data, $dataAppend);
             }
-            if($data->deletedImage){
+            if ($data->deletedImage) {
                 $this->deleteFile($data->deletedImage->image);
             }
             return $data;

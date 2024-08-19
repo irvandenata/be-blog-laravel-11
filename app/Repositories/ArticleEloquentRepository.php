@@ -12,6 +12,13 @@ class ArticleEloquentRepository extends BaseEloquentRepository
     {
         parent::__construct($model, $with);
     }
+
+    public function getDataBySlug($slug)
+    {
+        return $this->model->where('slug', $slug)->firstOrFail();
+    }
+
+
     public function store($request): Model
     {
         DB::beginTransaction();

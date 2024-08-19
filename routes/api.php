@@ -1,7 +1,8 @@
 <?php
 
+use App\Mail\SendMail;
 use Illuminate\Support\Facades\Route;
-
+use Illuminate\Support\Facades\Mail;
 Route::get('/', function () {
     return response()->json(['message' => 'this is api route']);
 });
@@ -38,6 +39,20 @@ Route::group([
     Route::get('/data/article-tags', [App\Http\Controllers\Api\Article\TagController::class, 'index']);
     Route::get('/data/custom-informations', [App\Http\Controllers\Api\CustomInformationController::class, 'index']);
     Route::get('/data/articles', [App\Http\Controllers\Api\Article\ArticleController::class, 'index']);
+    Route::get('/data/articles/{slug}', [App\Http\Controllers\Api\Article\ArticleController::class, 'getDataBySlug']);
+
+    Route::post('/send-message',function (){
+        // send email to irvandta@gmail.com
+        $data = [
+            'name' => 'Syahrizal As',
+            'body' => 'Testing Kirim Email di Santri Koding'
+        ];
+
+       
+        Mail::to('learndena@gmail.com')->send(new SendMail($data));
+       
+        dd("Email Berhasil dikirim.");
+     });
 
     Route::group(["middleware" => ['api-auth']], function () {
         Route::group([

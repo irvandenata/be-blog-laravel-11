@@ -19,17 +19,17 @@ class ArticleController extends Controller
     use BaseCrudTrait;
     public function __construct()
     {
-        $storeFields = ['title','content','category_id','image','status'];
-        $updateFields = ['title','content','category_id','image','status'];
+        $storeFields = ['title', 'content', 'category_id', 'image', 'status'];
+        $updateFields = ['title', 'content', 'category_id', 'image', 'status'];
         $appendRelation = ['tags'];
-        $this->with = ['category', 'tags','images'];
+        $this->with = ['category', 'tags', 'images'];
         $this->imageField = 'image';
         $fileFields = ['image'];
         $repository = new ArticleEloquentRepository(new Article(), $this->with);
         $this->resourceClass = ArticleResource::class;
         $options = [
             'service' => 'Article',
-            'slug' =>'title',
+            'slug' => 'title',
             'upload' => [
                 'fields' => $fileFields,
                 'path' => 'article',
@@ -37,7 +37,7 @@ class ArticleController extends Controller
             'storeField' => $storeFields,
             'updateField' => $updateFields,
             'appendRelation' => $appendRelation,
-            'searchField' => ['title','content'],
+            'searchField' => ['title', 'content'],
         ];
         $this->service = new ArticleService($repository, $options);
     }
@@ -51,7 +51,7 @@ class ArticleController extends Controller
     public function storeImage(Request $request, $id): JsonResponse
     {
         try {
-            $payload = $this->service->storeImage($request, $this->imageField,$id);
+            $payload = $this->service->storeImage($request, $this->imageField, $id);
 
             return $this->successResponse(new $this->resourceClass($payload), 'Image Article has been uploaded successfully.');
         } catch (\Exception $th) {
@@ -59,11 +59,21 @@ class ArticleController extends Controller
         }
     }
 
-    public function deleteImage($id,$imageId): JsonResponse
+    public function deleteImage($id, $imageId): JsonResponse
     {
         try {
-            $payload = $this->service->deleteImage($id,$imageId);
+            $payload = $this->service->deleteImage($id, $imageId);
             return $this->successResponse(new $this->resourceClass($payload), 'Image Article has been deleted successfully.');
+        } catch (\Exception $th) {
+            return $this->errorResponse($th->getMessage(), 500);
+        }
+    }
+
+    public function getDataBySlug(string $slug): JsonResponse
+    {
+        try {
+            $payload = $this->service->getDataBySlug($slug);
+            return $this->successResponse(new $this->resourceClass($payload), 'Data has been retrieved successfully.');
         } catch (\Exception $th) {
             return $this->errorResponse($th->getMessage(), 500);
         }
