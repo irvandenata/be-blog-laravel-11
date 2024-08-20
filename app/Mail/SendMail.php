@@ -27,7 +27,7 @@ class SendMail extends Mailable
      */
     public function build()
     {
-        return $this->subject('Testing Kirim Email')
+        return $this->subject('Ada Pesan dari ' . $this->data['name'])
                     ->view('emails.sendemail');
     }
 }

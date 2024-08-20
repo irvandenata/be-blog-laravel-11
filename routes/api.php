@@ -30,8 +30,8 @@ Route::group([
          * @method "POST"
          */
         Route::post('/login', App\Http\Controllers\Api\Auth\LoginController::class)->name('login');
-        Route::get('refresh/{token}', [App\Http\Controllers\Api\Auth\LoginController::class,'refresh'])->middleware('api-auth');
-        Route::get('logout', [App\Http\Controllers\Api\Auth\LoginController::class,'logout'])->name('logout')->middleware('api-auth');
+        Route::get('refresh/{token}', [App\Http\Controllers\Api\Auth\LoginController::class, 'refresh'])->middleware('api-auth');
+        Route::get('logout', [App\Http\Controllers\Api\Auth\LoginController::class, 'logout'])->name('logout')->middleware('api-auth');
     });
 
     Route::get('/data/settings', [App\Http\Controllers\Api\SettingController::class, 'getData'])->name('get-data');
@@ -41,18 +41,18 @@ Route::group([
     Route::get('/data/articles', [App\Http\Controllers\Api\Article\ArticleController::class, 'index']);
     Route::get('/data/articles/{slug}', [App\Http\Controllers\Api\Article\ArticleController::class, 'getDataBySlug']);
 
-    Route::post('/send-message',function (){
+    Route::post('/send-message', function () {
         // send email to irvandta@gmail.com
         $data = [
-            'name' => 'Syahrizal As',
-            'body' => 'Testing Kirim Email di Santri Koding'
+            'name' => request('name'),
+            'email' => request('email'),
+            'body' => request('message'),
         ];
-
-       
-        Mail::to('learndena@gmail.com')->send(new SendMail($data));
-       
-        dd("Email Berhasil dikirim.");
-     });
+        Mail::to('irvandta@gmail.com')->send(new SendMail($data));
+        return response()->json([
+            'message' => 'Email has been sent'
+        ]);
+    });
 
     Route::group(["middleware" => ['api-auth']], function () {
         Route::group([
@@ -117,30 +117,30 @@ Route::group([
         });
     });
 
-        // route artisan
-        Route::get('/clear-cache', function () {
-            Artisan::call('cache:clear');
-            Artisan::call('config:clear');
-            Artisan::call('route:clear');
-            return response()->json(['message' => 'cache cleared']);
-        });
+    // route artisan
+    Route::get('/clear-cache', function () {
+        Artisan::call('cache:clear');
+        Artisan::call('config:clear');
+        Artisan::call('route:clear');
+        return response()->json(['message' => 'cache cleared']);
+    });
 
-        Route::get('/migrate', function () {
-            Artisan::call('migrate');
-            return response()->json(['message' => 'migrate success']);
-        });
-        Route::get('/seed', function () {
-            Artisan::call('db:seed');
-            return response()->json(['message' => 'seed success']);
-        });
+    Route::get('/migrate', function () {
+        Artisan::call('migrate');
+        return response()->json(['message' => 'migrate success']);
+    });
+    Route::get('/seed', function () {
+        Artisan::call('db:seed');
+        return response()->json(['message' => 'seed success']);
+    });
 
-        Route::get('/storage-link', function () {
-            Artisan::call('storage:link');
-            return response()->json(['message' => 'storage link success']);
-        });
+    Route::get('/storage-link', function () {
+        Artisan::call('storage:link');
+        return response()->json(['message' => 'storage link success']);
+    });
 
-        Route::get('/fresh-data', function () {
-            Artisan::call('migrate:fresh --seed');
-            return response()->json(['message' => 'fresh data success']);
-        });
+    Route::get('/fresh-data', function () {
+        Artisan::call('migrate:fresh --seed');
+        return response()->json(['message' => 'fresh data success']);
+    });
 });
