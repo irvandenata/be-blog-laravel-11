@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Services;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class ArticleService extends BaseService
@@ -33,6 +34,24 @@ class ArticleService extends BaseService
                         'column' => "category_id",
                         "type" => "single",
                         'value' => $request->search_category_id,
+                    ]
+                ]);
+            }
+            if ($request->order_desc_by) {
+
+                $filters = array_merge($filters, [
+                    [
+                        'column' => $request->order_desc_by,
+                        "type" => "sort",
+                        'value' => "desc",
+                    ]
+                ]);
+            } else {
+                $filters = array_merge($filters, [
+                    [
+                        'column' => "created_at",
+                        "type" => "sort",
+                        'value' => "desc",
                     ]
                 ]);
             }
@@ -145,5 +164,23 @@ class ArticleService extends BaseService
         $this->deleteFile($image->image);
         $image->delete();
         return $model;
+    }
+
+    public function createComment($request)
+    {
+        $request['user_id'] = User::where('username', $request->username)->first();
+        // check password
+        if ($request['user_id']) {
+            // compare password
+            if (!\Hash::check($request->password, $request['user_id']->password)) {
+                throw new \Exception('Password not match');
+            }
+            $request['user_id'] = $request['user_id']->id;
+        } else {
+            $user = $this->repository->createUser($request);
+            $request['user_id'] = $user->id;
+        }
+        $data = $this->repository->createComment($request);
+        return $data;
     }
 }

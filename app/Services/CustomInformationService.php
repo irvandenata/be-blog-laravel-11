@@ -36,6 +36,17 @@ class CustomInformationService extends BaseService
                     ]
                 ]);
             }
+
+            if($request->order_desc_by){
+            
+                $filters = array_merge($filters, [
+                    [
+                        'column' => $request->order_desc_by,
+                        "type" => "sort",
+                        'value' => "desc",
+                    ]
+                ]);
+            }
             $data = $this->repository->getData($this->perPage, $this->page, $request->search, $this->searchField, $allData, $filters);
             return $data;
         } catch (\Throwable $th) {

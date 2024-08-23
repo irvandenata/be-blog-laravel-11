@@ -2,6 +2,8 @@
 
 namespace App\Repositories;
 
+use App\Models\Comment;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -37,7 +39,7 @@ class ArticleEloquentRepository extends BaseEloquentRepository
                 unset($request['image']);
             }
 
-           
+
 
             $item = $item->create($request);
             if ($image) {
@@ -157,5 +159,36 @@ class ArticleEloquentRepository extends BaseEloquentRepository
             DB::rollBack();
             throw $e;
         }
+    }
+
+
+    public function createComment($request)
+    {
+        DB::beginTransaction();
+        try {
+            // find acticle 
+            $article = $this->model->findOrFail($request->article_id);
+            $comment = Comment::create([
+                'article_id' => $request->article_id,
+                'user_id' => $request->user_id,
+                'comment' => $request->comment,
+            ]);
+            DB::commit();
+            return $comment;
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
+
+    public function createUser($request)
+    {
+        $user = User::create([
+            'name' => $request->username,
+            'email' => $request->username . rand(1, 100) . '@mail.com',
+            'username' => $request->username,
+            'password' => \Hash::make($request->password),
+        ]);
+        return $user;
     }
 }

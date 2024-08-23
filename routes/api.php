@@ -32,6 +32,7 @@ Route::group([
         Route::post('/login', App\Http\Controllers\Api\Auth\LoginController::class)->name('login');
         Route::get('refresh/{token}', [App\Http\Controllers\Api\Auth\LoginController::class, 'refresh'])->middleware('api-auth');
         Route::get('logout', [App\Http\Controllers\Api\Auth\LoginController::class, 'logout'])->name('logout')->middleware('api-auth');
+
     });
 
     Route::get('/data/settings', [App\Http\Controllers\Api\SettingController::class, 'getData'])->name('get-data');
@@ -40,7 +41,7 @@ Route::group([
     Route::get('/data/custom-informations', [App\Http\Controllers\Api\CustomInformationController::class, 'index']);
     Route::get('/data/articles', [App\Http\Controllers\Api\Article\ArticleController::class, 'index']);
     Route::get('/data/articles/{slug}', [App\Http\Controllers\Api\Article\ArticleController::class, 'getDataBySlug']);
-
+    Route::post('comment', [App\Http\Controllers\Api\Article\ArticleController::class, 'createComment']);
     Route::post('/send-message', function () {
         // send email to irvandta@gmail.com
         $data = [

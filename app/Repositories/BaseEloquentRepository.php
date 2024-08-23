@@ -41,6 +41,7 @@ class BaseEloquentRepository
         if (count($this->with) > 0) {
             $data = $data->with($this->with);
         }
+
         if (count($filter) > 0) {
             foreach ($filter as $value) {
                 if ($value['type'] == 'array_text') {
@@ -49,13 +50,14 @@ class BaseEloquentRepository
                             $query->orWhere($value['column'], 'like', '%' . $val . '%');
                         }
                     });
-                    foreach ($value['value'] as $val) {
 
-                    }
                 } else if ($value['type'] == 'single') {
                     $data = $data->where($value['column'], $value['value']);
                 } else if ($value['type'] == 'latest') {
                     $data = $data->orderBy($value['column'], 'desc');
+                }
+                if ($value['type'] == 'sort') {
+                    $data = $data->orderBy($value['column'], $value['value']);
                 }
             }
         }
@@ -67,6 +69,7 @@ class BaseEloquentRepository
         } else {
             $data = $data->paginate($perPage, ['*'], 'page', $page);
         }
+
         return $data;
     }
 

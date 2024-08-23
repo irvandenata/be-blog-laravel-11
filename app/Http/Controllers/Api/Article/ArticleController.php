@@ -10,6 +10,7 @@ use App\Services\ArticleService;
 use App\Traits\BaseCrudTrait;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 class ArticleController extends Controller
 {
     protected $storeFields;
@@ -75,6 +76,28 @@ class ArticleController extends Controller
             $payload = $this->service->getDataBySlug($slug);
             return $this->successResponse(new $this->resourceClass($payload), 'Data has been retrieved successfully.');
         } catch (\Exception $th) {
+            return $this->errorResponse($th->getMessage(), 500);
+        }
+    }
+
+    public function createComment(Request $request): JsonResponse
+    {
+        try {
+            // validate username not include space
+            $request->validate([
+                'username' => 'required|string|regex:/^\S*$/u',
+                'password' => 'required',
+                'comment' => 'required',
+                'article_id' => 'required',
+            ]);
+            $payload = $this->service->createComment($request);
+            return $this->successResponse($payload, 'Comment has been created successfully.');
+        } catch (NotFoundHttpException $th) {
+            return $this->errorResponse($th->getMessage(), 404);
+        } catch (\Exception $th) {
+            if (isset($th->validator)) {
+                return $this->errorResponse($th->validator->errors(), 422);
+            }
             return $this->errorResponse($th->getMessage(), 500);
         }
     }
