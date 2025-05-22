@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers\Api\Auth;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
@@ -20,6 +21,7 @@ class LoginController extends Controller
             'email' => 'required',
             'password' => 'required'
         ]);
+        $user = User::where('email', $request->email)->first();
 
         //if validation fails
         if ($validator->fails()) {

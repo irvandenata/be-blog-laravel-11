@@ -24,4 +24,9 @@ class Article extends Model
     {
         return $this->hasMany(ArticleImage::class);
     }
+
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
 }

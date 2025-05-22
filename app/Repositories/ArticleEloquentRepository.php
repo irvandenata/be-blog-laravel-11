@@ -6,18 +6,70 @@ use App\Models\Comment;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 
 class ArticleEloquentRepository extends BaseEloquentRepository
 {
     public function __construct(Model $model, $with = [])
     {
+
         parent::__construct($model, $with);
     }
 
+    public function getData($perPage, $page, $search = '', $searchField = [], $allData = false, $filter = []): LengthAwarePaginator
+    {
+        $data = $this->model;
+        if ($search) {
+            $data = $data->where(function ($query) use ($search, $searchField) {
+                foreach ($searchField as $field) {
+                    $query->orWhere($field, 'like', '%' . $search . '%');
+                }
+            });
+        }
+
+        if (count($this->with) > 0) {
+            $data = $data->with($this->with);
+        }
+        if (count($filter) > 0) {
+            foreach ($filter as $value) {
+                if ($value['type'] == 'array_text') {
+                    $data = $data->where(function ($query) use ($value) {
+                        foreach ($value['value'] as $val) {
+                            $query->orWhere($value['column'], 'like', '%' . $val . '%');
+                        }
+                    });
+
+                } else if ($value['type'] == 'single') {
+                    $data = $data->where($value['column'], $value['value']);
+                } else if ($value['type'] == 'latest') {
+                    $data = $data->orderBy($value['column'], 'desc');
+                }
+                if ($value['type'] == 'sort') {
+                    $data = $data->orderBy($value['column'], $value['value']);
+                }
+            }
+        }
+
+        if ($allData) {
+            $data = $data->paginate($data->count(), ['*'], 'page', $page);
+        } else {
+            $data = $data->paginate($perPage, ['*'], 'page', $page);
+        }
+
+        return $data;
+    }
+
+
     public function getDataBySlug($slug)
     {
-        return $this->model->where('slug', $slug)->firstOrFail();
+        // get header request value count
+        $count = request()->header('count');
+        $data = $this->model->where('slug', $slug)->firstOrFail();
+        if ($count) {
+            $data->increment('views');
+        }
+        return $data;
     }
 
 
@@ -38,7 +90,6 @@ class ArticleEloquentRepository extends BaseEloquentRepository
                 $image = $request['image'];
                 unset($request['image']);
             }
-
 
 
             $item = $item->create($request);
@@ -190,5 +241,11 @@ class ArticleEloquentRepository extends BaseEloquentRepository
             'password' => \Hash::make($request->password),
         ]);
         return $user;
+    }
+
+
+    public function getComments($slug)
+    {
+        return $this->model->where('slug', $slug)->firstOrFail()->comments;
     }
 }

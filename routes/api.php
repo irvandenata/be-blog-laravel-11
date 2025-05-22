@@ -8,11 +8,34 @@ Route::get('/', function () {
 });
 
 Route::group([
+    "prefix" => 'dummy',
+], function () {
+    Route::get('/', function () {
+        return response()->json(['message' => 'api dummy']);
+    });
+
+
+    Route::get('/category-products',function(){
+        $data = [];
+        // read setting.json from public folder
+        $setting = file_get_contents(public_path('category-product.json'));
+        $data = json_decode($setting, true);
+        return response()->json([
+            'success' => true,
+            'message' => 'this is setting data',
+            'data' => $data,
+        ], 200);
+    });
+
+});
+
+Route::group([
     "prefix" => config('app.api_version'),
 ], function () {
     Route::get('/', function () {
         return response()->json(['message' => 'this is api route']);
     });
+
 
 
     /**
@@ -42,6 +65,7 @@ Route::group([
     Route::get('/data/articles', [App\Http\Controllers\Api\Article\ArticleController::class, 'index']);
     Route::get('/data/articles/{slug}', [App\Http\Controllers\Api\Article\ArticleController::class, 'getDataBySlug']);
     Route::post('comment', [App\Http\Controllers\Api\Article\ArticleController::class, 'createComment']);
+    Route::get('/data/comments/{slug}', [App\Http\Controllers\Api\Article\ArticleController::class, 'getComments']);
     Route::post('/send-message', function () {
         // send email to irvandta@gmail.com
         $data = [

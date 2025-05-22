@@ -4,13 +4,16 @@ namespace App\Http\Controllers\Api\Article;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ArticleResource;
+use App\Http\Resources\CommentResource;
 use App\Models\Article;
 use App\Repositories\ArticleEloquentRepository;
 use App\Services\ArticleService;
 use App\Traits\BaseCrudTrait;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use App\Http\Resources\Resource;
 class ArticleController extends Controller
 {
     protected $storeFields;
@@ -23,7 +26,7 @@ class ArticleController extends Controller
         $storeFields = ['title', 'content', 'category_id', 'image', 'status'];
         $updateFields = ['title', 'content', 'category_id', 'image', 'status'];
         $appendRelation = ['tags'];
-        $this->with = ['category', 'tags', 'images'];
+        $this->with = ['category', 'tags','images'];
         $this->imageField = 'image';
         $fileFields = ['image'];
         $repository = new ArticleEloquentRepository(new Article(), $this->with);
@@ -49,6 +52,14 @@ class ArticleController extends Controller
      * @param $request: App\Http\Requests\Store{ Model }Request
      * @return JsonResponse
      */
+
+
+    public function index(Request $request): JsonResource
+    {
+        
+        $payload = $this->service->getData($request);
+        return new Resource(true, 'Data retrieved successfully', $payload, $this->resourceClass);
+    }
     public function storeImage(Request $request, $id): JsonResponse
     {
         try {
@@ -98,6 +109,19 @@ class ArticleController extends Controller
             if (isset($th->validator)) {
                 return $this->errorResponse($th->validator->errors(), 422);
             }
+            return $this->errorResponse($th->getMessage(), 500);
+        }
+    }
+
+    public function getComments($slug): JsonResponse
+    {
+        try {
+            $payload = $this->service->getComments($slug);
+            return $this->successResponse(
+                CommentResource::collection($payload),
+                'Comment has been retrieved successfully.'
+            );
+        } catch (\Exception $th) {
             return $this->errorResponse($th->getMessage(), 500);
         }
     }

@@ -3,7 +3,7 @@
 namespace App\Services;
 use App\Models\User;
 use Illuminate\Http\Request;
-
+use Log;
 class ArticleService extends BaseService
 {
     public function __construct($repository, $options)
@@ -17,7 +17,7 @@ class ArticleService extends BaseService
         try {
             $allData = $request->all_data ? true : false;
             $filters = [];
-
+            
             if ($request->search_latest) {
                 $filters = array_merge($filters, [
                     [
@@ -55,6 +55,35 @@ class ArticleService extends BaseService
                     ]
                 ]);
             }
+            //get header authorization
+            $token = $request->header('Authorization');
+            $isLogin = false;
+            // auth
+            if ($token) {
+                $token = explode(' ', $token);
+                $token = $token[1];
+                // login with token
+                try {
+                    $user = auth()->guard('api')->authenticate($token);
+                    if ($user) {
+                        $isLogin = true;
+                    }
+                } catch (\Throwable $th) {
+                    $isLogin = false;
+                }
+            }
+
+            if (!$isLogin) {
+                $filters = array_merge($filters, [
+                    [
+                        'column' => "status",
+                        "type" => "single",
+                        'value' => 'publish',
+                    ]
+                ]);
+            }
+
+
             $data = $this->repository->getData($this->perPage, $this->page, $request->search, $this->searchField, $allData, $filters);
             return $data;
         } catch (\Throwable $th) {
@@ -83,6 +112,7 @@ class ArticleService extends BaseService
             }
 
             $data = $this->repository->store($request);
+
             if ($dataAppend) {
                 $data = $this->repository->appendRelation($data, $dataAppend);
             }
@@ -91,7 +121,7 @@ class ArticleService extends BaseService
             foreach ($this->fileFields as $field) {
                 $this->deleteFile($request[$field]);
             }
-            Log::warning($th->getMessage());
+            log::warning($th->getMessage());
             throw $th;
         }
     }
@@ -118,7 +148,6 @@ class ArticleService extends BaseService
                     $request[$field] = $this->storeFile($request, $field, $imagePath);
                 }
             }
-
             if (count($this->appendRelation) > 0) {
                 foreach ($this->appendRelation as $relation) {
                     $dataAppend[$relation] = $request[$relation];
@@ -144,7 +173,6 @@ class ArticleService extends BaseService
             foreach ($this->fileFields as $field) {
                 $this->deleteFile($request[$field]);
             }
-            Log::warning($th->getMessage());
             throw $th;
         }
     }
@@ -181,6 +209,13 @@ class ArticleService extends BaseService
             $request['user_id'] = $user->id;
         }
         $data = $this->repository->createComment($request);
+        return $data;
+    }
+
+    public function getComments($slug)
+    {
+        $data = $this->repository->getComments($slug);
+
         return $data;
     }
 }

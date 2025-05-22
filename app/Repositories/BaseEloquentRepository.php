@@ -41,7 +41,6 @@ class BaseEloquentRepository
         if (count($this->with) > 0) {
             $data = $data->with($this->with);
         }
-
         if (count($filter) > 0) {
             foreach ($filter as $value) {
                 if ($value['type'] == 'array_text') {
@@ -61,9 +60,7 @@ class BaseEloquentRepository
                 }
             }
         }
-        if (auth()->user() ? auth()->user()->role == 'user' : false) {
-            $data = $data->where('status', 'published');
-        }
+
         if ($allData) {
             $data = $data->paginate($data->count(), ['*'], 'page', $page);
         } else {

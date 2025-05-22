@@ -1,0 +1,63 @@
+[
+    {
+      "id": 1,
+      "name": "Electronics",
+      "slug": "electronics",
+      "image": "https://via.placeholder.com/100?text=Electronics"
+    },
+    {
+      "id": 2,
+      "name": "Fashion",
+      "slug": "fashion",
+      "image": "https://via.placeholder.com/100?text=Fashion"
+    },
+    {
+      "id": 3,
+      "name": "Home Appliances",
+      "slug": "home-appliances",
+      "image": "https://via.placeholder.com/100?text=Home+Appliances"
+    },
+    {
+      "id": 4,
+      "name": "Books",
+      "slug": "books",
+      "image": "https://via.placeholder.com/100?text=Books"
+    },
+    {
+      "id": 5,
+      "name": "Toys",
+      "slug": "toys",
+      "image": "https://via.placeholder.com/100?text=Toys"
+    },
+    {
+      "id": 6,
+      "name": "Beauty Products",
+      "slug": "beauty-products",
+      "image": "https://via.placeholder.com/100?text=Beauty+Products"
+    },
+    {
+      "id": 7,
+      "name": "Sports",
+      "slug": "sports",
+      "image": "https://via.placeholder.com/100?text=Sports"
+    },
+    {
+      "id": 8,
+      "name": "Automotive",
+      "slug": "automotive",
+      "image": "https://via.placeholder.com/100?text=Automotive"
+    },
+    {
+      "id": 9,
+      "name": "Groceries",
+      "slug": "groceries",
+      "image": "https://via.placeholder.com/100?text=Groceries"
+    },
+    {
+      "id": 10,
+      "name": "Furniture",
+      "slug": "furniture",
+      "image": "https://via.placeholder.com/100?text=Furniture"
+    }
+  ]
+  
