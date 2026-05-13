@@ -9,6 +9,7 @@ import ArticleCategoryPage from "../pages/Admin/ArticleCategory";
 import ArticlePage from "../pages/Admin/Article";
 import ArticleTagPage from "../pages/Admin/ArticleTag";
 import CustomInformationTypePage from "../pages/Admin/CustomInformationType";
+import ContactMessagePage from "@/pages/Admin/ContactMessage";
 import { checkAuthLoader, ifLogin, logout } from "@/utils/auth";
 import MainLayout from "@/components/Layouts/MainLayout";
 import ErrorPage from "@/pages/Error";
@@ -73,6 +74,11 @@ export default createBrowserRouter(
                 {
                     path: "settings",
                     element: <SettingPage />,
+                    loader: middlewareLoader,
+                },
+                {
+                    path: "contact-messages",
+                    element: <ContactMessagePage />,
                     loader: middlewareLoader,
                 },
                 {

@@ -1,51 +1,86 @@
 "use client";
 
-import { useState } from "react";
+import { ChangeEvent, FormEvent, useState } from "react";
 import AnimateSection from "../UI/AnimateSection";
 import toast from "react-hot-toast";
 import { sendMessage } from "@/services/landing";
 
+const generateCaptcha = () => Math.random().toString(36).substring(2, 7);
+
 const CardGetInTouch = () => {
-    const [captchaText, setCaptchaText] = useState("");
-    useState(() => {
-        const captcha = Math.random().toString(36).substring(2, 7);
-        setCaptchaText(captcha);
+    const [captchaText, setCaptchaText] = useState(generateCaptcha);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [formData, setFormData] = useState({
+        name: "",
+        email: "",
+        subject: "",
+        message: "",
+        captcha: "",
     });
 
-    const handleSubmit = (e: any) => {
+    const refreshCaptcha = () => {
+        setCaptchaText(generateCaptcha());
+        setFormData((current) => ({
+            ...current,
+            captcha: "",
+        }));
+    };
+
+    const handleChange = (
+        e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    ) => {
+        const { name, value } = e.target;
+
+        setFormData((current) => ({
+            ...current,
+            [name]: value,
+        }));
+    };
+
+    const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        // disable button submit
-        e.target.querySelector("button").disabled = true;
-        console.log(e.target.captcha.value);
-        if (e.target.captcha.value === captchaText) {
-            const data = {
-                name: e.target.name.value,
-                email: e.target.email.value,
-                message: e.target.message.value,
-            };
-            toast
-                .promise(
-                    sendMessage(data),
-                    {
-                        loading: "Sending message...",
-                        success: "Message sent successfully",
-                        error: "Failed to send message",
-                    },
-                    {
-                        duration: 3000,
-                    }
-                )
-                .then(() => {
-                    const captcha = Math.random().toString(36).substring(2, 7);
-                    setCaptchaText(captcha);
-                    e.target.reset();
-                    e.target.querySelector("button").disabled = false;
-                });
-        } else {
+
+        if (formData.captcha !== captchaText) {
             toast.error("Captcha is not correct !");
-            e.target.querySelector("button").disabled = false;
+            refreshCaptcha();
+            return;
+        }
+
+        setIsSubmitting(true);
+
+        try {
+            await toast.promise(
+                sendMessage({
+                    name: formData.name,
+                    email: formData.email,
+                    subject: formData.subject,
+                    message: formData.message,
+                }),
+                {
+                    loading: "Sending message...",
+                    success: "Message sent successfully",
+                    error: "Failed to send message",
+                },
+                {
+                    duration: 3000,
+                }
+            );
+
+            setFormData({
+                name: "",
+                email: "",
+                subject: "",
+                message: "",
+                captcha: "",
+            });
+            setCaptchaText(generateCaptcha());
+        } catch {
+            refreshCaptcha();
+        } finally {
+            setIsSubmitting(false);
         }
     };
+
     return (
         <div className="w-full lg:p-10  ">
             <AnimateSection
@@ -81,11 +116,6 @@ const CardGetInTouch = () => {
                     id="form-get-in-touch"
                     onSubmit={handleSubmit}
                 >
-                    <input
-                        type="hidden"
-                        name="_token"
-                        value="uq52npNjJSdPH13hzQifh2GrShmXd8iVdGi9X8rb"
-                    />
                     <div className="mb-6">
                         <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white ">
                             Your Name
@@ -93,7 +123,10 @@ const CardGetInTouch = () => {
                         <input
                             type="text"
                             id="name"
+                            name="name"
                             autoComplete="off"
+                            value={formData.name}
+                            onChange={handleChange}
                             className="bg-gray-50 border-2 border-bodydark  text-gray-900 text-sm rounded-lg focus:outline-primary  block w-full p-2.5 dark:bg-gray-700 dark:border-bodydark -600 dark:placeholder-gray-400 dark:text-dark dark:focus:border-bodydark  "
                             placeholder="your name"
                             required
@@ -106,10 +139,28 @@ const CardGetInTouch = () => {
                         <input
                             type="email"
                             id="email"
+                            name="email"
                             autoComplete="off"
+                            value={formData.email}
+                            onChange={handleChange}
                             className="bg-gray-50 border-2 border-bodydark  text-gray-900 text-sm rounded-lg focus:outline-primary  block w-full p-2.5 dark:bg-gray-700 dark:border-bodydark -600 dark:placeholder-gray-400 dark:text-dark dark:focus:border-bodydark  "
                             placeholder="your@email.com"
                             required
+                        />
+                    </div>
+                    <div className="mb-6">
+                        <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                            Subject
+                        </label>
+                        <input
+                            type="text"
+                            id="subject"
+                            name="subject"
+                            autoComplete="off"
+                            value={formData.subject}
+                            onChange={handleChange}
+                            className="bg-gray-50 border-2 border-bodydark  text-gray-900 text-sm rounded-lg focus:outline-primary  block w-full p-2.5 dark:bg-gray-700 dark:border-bodydark -600 dark:placeholder-gray-400 dark:text-dark dark:focus:border-bodydark  "
+                            placeholder="What would you like to discuss?"
                         />
                     </div>
                     <div className="mb-6">
@@ -118,8 +169,12 @@ const CardGetInTouch = () => {
                         </label>
                         <textarea
                             id="message"
+                            name="message"
+                            value={formData.message}
+                            onChange={handleChange}
                             className=" bg-gray-50 border-2 border-bodydark  text-gray-900 text-sm rounded-lg focus:outline-primary focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-bodydark -600 dark:placeholder-gray-400 dark:text-dark dark:focus:ring-blue-500 dark:focus:border-blue-500"
                             spellCheck="false"
+                            required
                         ></textarea>
                     </div>
 
@@ -133,13 +188,15 @@ const CardGetInTouch = () => {
                             </div>
                         </div>
                         <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white ">
-                            Are you human? This website just for human only, if
-                            you are jin, ghost, or robot, please go away
+                            Type the captcha shown above to continue.
                         </label>
                         <input
                             type="text"
                             id="captcha"
+                            name="captcha"
                             autoComplete="off"
+                            value={formData.captcha}
+                            onChange={handleChange}
                             className="bg-gray-50 border-2 border-bodydark  text-gray-900 text-sm rounded-lg focus:outline-primary  block w-full p-2.5 dark:bg-gray-700 dark:border-bodydark -600 dark:placeholder-gray-400 dark:text-dark dark:focus:border-bodydark  "
                             placeholder="Type the captcha"
                             required
@@ -147,9 +204,10 @@ const CardGetInTouch = () => {
                     </div>
                     <button
                         type="submit"
-                        className="text-black dark:bg-slate-400  dark:text-white bg-blue-700 hover:bg-blue-800 bg-background focus:ring-4 dark:hover:bg-primary hover:bg-primary focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                        disabled={isSubmitting}
+                        className="text-white dark:bg-slate-400  dark:text-white bg-blue-700 hover:bg-blue-800 bg-background focus:ring-4 dark:hover:bg-primary hover:bg-primary focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
                     >
-                        Send &nbsp;
+                        {isSubmitting ? "Sending..." : "Send"} &nbsp;
                         <svg
                             className="w-3.5 h-3.5 inline-block"
                             aria-hidden="true"

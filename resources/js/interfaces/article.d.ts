@@ -50,6 +50,7 @@ export interface IArticle {
     slug?: string;
     tags: IArticleTag[];
     category: IArticleCategory;
+    category_id?: number;
     category_name?: string;
     views: number;
 }

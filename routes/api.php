@@ -1,8 +1,6 @@
 <?php
 
-use App\Mail\SendMail;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Mail;
 Route::get('/', function () {
     return response()->json(['message' => 'this is api route']);
 });
@@ -66,29 +64,19 @@ Route::group([
     Route::get('/data/articles/{slug}', [App\Http\Controllers\Api\Article\ArticleController::class, 'getDataBySlug']);
     Route::post('comment', [App\Http\Controllers\Api\Article\ArticleController::class, 'createComment']);
     Route::get('/data/comments/{slug}', [App\Http\Controllers\Api\Article\ArticleController::class, 'getComments']);
-    Route::post('/send-message', function () {
-        // send email to irvandta@gmail.com
-        $data = [
-            'name' => request('name'),
-            'email' => request('email'),
-            'body' => request('message'),
-        ];
-        $resend = Resend::client(env('RESEND_KEY'));
-        $resend->emails->send([
-            'from' => 'info@ivd.my.id',
-            'to' => ['irvandta@gmail.com'],
-            'subject' => 'New Message from Contact Form',
-            'html' => "<p>You have received a new message from your website contact form.</p>" .
-                "<h5>Name: " . $data['name'] . "</h5>" .
-                "<h5>Email: " . $data['email'] . "</h5>" .
-                "<p>Message: " . $data['body'] . "</p>"
-        ]);
-        return response()->json([
-            'message' => 'Email has been sent'
-        ]);
-    });
+    Route::post('/send-message', [App\Http\Controllers\Api\ContactMessageController::class, 'store']);
 
     Route::group(["middleware" => ['api-auth']], function () {
+        Route::group([
+            "prefix" => 'contact-messages',
+        ], function () {
+            Route::get('/', [App\Http\Controllers\Api\ContactMessageController::class, 'index']);
+            Route::get('/notifications', [App\Http\Controllers\Api\ContactMessageController::class, 'notifications']);
+            Route::get('/{id}', [App\Http\Controllers\Api\ContactMessageController::class, 'show']);
+            Route::patch('/{id}/read', [App\Http\Controllers\Api\ContactMessageController::class, 'markAsRead']);
+            Route::delete('/{id}', [App\Http\Controllers\Api\ContactMessageController::class, 'destroy']);
+        });
+
         Route::group([
             "prefix" => 'settings',
         ], function () {

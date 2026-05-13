@@ -19,8 +19,9 @@ const CommentCard: React.FC<{ articleId: string; slug: string }> = ({
         setCaptchaText(captcha);
     });
 
-    const getComments = async (slug: string) => {
-        fetchComments(slug).then((res) => {
+    const getComments = (slug: string) => {
+        setComments([]);
+        return fetchComments(slug).then((res) => {
             setComments(res.data);
         });
     };
@@ -41,8 +42,16 @@ const CommentCard: React.FC<{ articleId: string; slug: string }> = ({
 
 
         
-        //get comments
-        getComments(slug);
+        let isCurrent = true;
+        setComments([]);
+        fetchComments(slug).then((res) => {
+            if (!isCurrent) return;
+            setComments(res.data);
+        });
+
+        return () => {
+            isCurrent = false;
+        };
     }, [slug]);
 
     const changeUser = () => {
@@ -234,7 +243,7 @@ const CommentCard: React.FC<{ articleId: string; slug: string }> = ({
                 </div>
                 <button
                     type="submit"
-                    className="text-black dark:bg-slate-400  dark:text-white bg-blue-700 hover:bg-blue-800 bg-background focus:ring-4 dark:hover:bg-primary hover:bg-primary focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                    className="text-white dark:bg-slate-400  dark:text-white bg-blue-700 hover:bg-blue-800 bg-background focus:ring-4 dark:hover:bg-primary hover:bg-primary focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
                 >
                     Send &nbsp;
                     <svg

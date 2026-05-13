@@ -5,6 +5,7 @@ import {
     IconArticle,
     IconCategory,
     IconInfoSquareRounded,
+    IconMail,
     IconSettings,
 } from "@tabler/icons-react";
 import { NavLink } from "react-router-dom";
@@ -33,6 +34,12 @@ const dashboardItems = [
         description: "Update landing content",
         to: "/admin/settings",
         icon: IconSettings,
+    },
+    {
+        title: "Messages",
+        description: "Review landing contact form messages",
+        to: "/admin/contact-messages",
+        icon: IconMail,
     },
 ];
 

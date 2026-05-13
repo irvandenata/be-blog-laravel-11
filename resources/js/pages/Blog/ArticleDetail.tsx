@@ -14,6 +14,14 @@ const ArticleDetailPage = () => {
 	const dispatch = useDispatch();
 	const navigate = useNavigate();
 	useEffect(() => {
+		if (!param.slug) {
+			navigate("/not-found");
+			return;
+		}
+
+		setArticle(null);
+		setArticles([]);
+		let isCurrent = true;
 		const cookie = document.cookie;
 		let count = true;
 		const flag = cookie
@@ -25,6 +33,7 @@ const ArticleDetailPage = () => {
 		dispatch(setActiveMenu("blogs"));
 		getDataBySlug(param.slug ?? "", count)
 			.then((res) => {
+				if (!isCurrent) return;
 				setArticle(res.data);
 				// set cookies just for one day
 				const date = new Date();
@@ -34,19 +43,25 @@ const ArticleDetailPage = () => {
 				}=true; expires=${date.toUTCString()}; path=/`;
 			})
 			.catch((_) => {
+				if (!isCurrent) return;
 				navigate("/not-found");
 			});
 		// get flag count form cookies
-	}, [navigate, dispatch]);
+		return () => {
+			isCurrent = false;
+		};
+	}, [param.slug, navigate, dispatch]);
 
 	useEffect(() => {
-        if (!article) return;
+		if (!article) return;
+		let isCurrent = true;
 		fetchDataNoAuth({
 			page: 1,
 			limit: 3,
-			search_category_id: article.category_id,
+			search_category_id: article.category?.id,
 		})
 			.then((res) => {
+				if (!isCurrent) return;
 				// filter out the current article from related articles and set 3 articles
 				if (article) {
 					const relatedArticles = res.data.filter(
@@ -58,10 +73,15 @@ const ArticleDetailPage = () => {
 			.catch((err) => {
 				console.error("Error fetching related articles:", err);
 			});
+		return () => {
+			isCurrent = false;
+		};
 	}, [article]);
 
-	//set direction to top
-	window.scrollTo(0, 0);
+	useEffect(() => {
+		window.scrollTo(0, 0);
+	}, [article?.slug]);
+
 	return article ? (
 		<>
 			<div
@@ -96,7 +116,7 @@ const ArticleDetailPage = () => {
 								width="20px"
 								height="20px"
 								viewBox="0 0 1024 1024"
-								className="icon my-auto"
+								className="icon my-auto text-white"
 								xmlns="http://www.w3.org/2000/svg"
 							>
 								<path
@@ -105,7 +125,7 @@ const ArticleDetailPage = () => {
 								/>
 							</svg>
 							&nbsp;
-							<p className="text-md my-auto  font-bold rounded-xl">
+							<p className="text-md my-auto text-white  font-bold rounded-xl">
 								{article?.views} Views
 							</p>
 						</div>
@@ -156,7 +176,6 @@ const ArticleDetailPage = () => {
 											className="w-full hover:border-primary hover:scale-105 hover:cursor-pointer border-2 border-bodydark2 dark:border-slate-800 rounded-xl relative overflow-hidden"
 											onClick={() => {
 												navigate(`/blogs/${item.slug}`);
-                                                setArticle(item);
 											}}
 										>
 											<div className="place-items-start flex">
@@ -193,6 +212,7 @@ const ArticleDetailPage = () => {
 
 				<div className="lg:pb-40 w-full mb:pb-40 pb-30 lg:px-60 mt-20">
 					<CommentCard
+						key={article.id}
 						articleId={article.id.toString()}
 						slug={article.slug ?? ""}
 					/>

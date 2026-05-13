@@ -59,7 +59,12 @@ export async function fetchDataProjects(): Promise<any> {
 }
 
 
-export async function sendMessage(formData:any): Promise<any> {
+export async function sendMessage(formData: {
+    name: string;
+    email: string;
+    subject?: string;
+    message: string;
+}): Promise<any> {
     const url = `${ROOT_API}/${API_VERSION}/send-message`;
     // handling when error
     const response = await callAPI({
@@ -70,4 +75,3 @@ export async function sendMessage(formData:any): Promise<any> {
 
     return response;
 }
-
