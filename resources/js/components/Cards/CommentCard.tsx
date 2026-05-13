@@ -143,9 +143,14 @@ const CommentCard: React.FC<{ articleId: string; slug: string }> = ({
                 id="form-article"
                 onSubmit={handleSubmit}
             >
-                <h3 className="text-2xl col-span-2 mb-6 font-bold dark:text-white text-dark">
+                <h3 className="text-2xl col-span-2 mb-2 font-bold dark:text-white text-dark">
                     Leave a Comment
                 </h3>
+                <p className="col-span-2 mb-4 text-sm text-gray-500 dark:text-gray-400">
+                    {username !== null
+                        ? "You have commented before. Your account is saved automatically — just write your comment!"
+                        : "First time commenting? Enter your username and password. Your account will be saved automatically for future comments."}
+                </p>
                 <input
                     type="hidden"
                     name="_token"
@@ -159,7 +164,6 @@ const CommentCard: React.FC<{ articleId: string; slug: string }> = ({
                                 <b className="text-[24px]">{username}</b>
                             </h4>
                         </div>
-                        {/* change account */}
                         <div className="col-span-2">
                             <button
                                 type="button"
@@ -183,7 +187,6 @@ const CommentCard: React.FC<{ articleId: string; slug: string }> = ({
                                 className="bg-gray-50 border-2 border-bodydark  text-gray-900 text-sm rounded-lg focus:outline-primary  block w-full p-2.5 dark:bg-gray-700 dark:border-bodydark -600 dark:placeholder-gray-400 dark:text-dark dark:focus:border-bodydark  "
                                 placeholder="your username"
                                 onChange={(e) => {
-                                    //remove space
                                     e.target.value = e.target.value.replace(
                                         / /g,
                                         ""
@@ -229,8 +232,7 @@ const CommentCard: React.FC<{ articleId: string; slug: string }> = ({
                         </div>
                     </div>
                     <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white ">
-                        Are you human? This website just for human only, if you
-                        are jin, ghost, or robot, please go away
+                        Are you human? This website is for humans only, if you are a jin, ghost, or robot, please go away
                     </label>
                     <input
                         type="text"
