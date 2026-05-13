@@ -39,14 +39,14 @@ const WorkExperienceCard: React.FC<{ workExperience: any }> = ({
                                 <p className="mb-2 text-md font-semibold text-gray-500 dark:text-gray-400">
                                     {exp.subtitle}
                                 </p>
-                                <time className="block mb-2 text-sm font-semibold leading-none text-gray-400 dark:text-gray-500">
+                                <time className="block mb-2 text-sm font-semibold leading-none text-gray-400 dark:text-white">
                                     {convertDate(exp.start_date, "mm-yyyy")} -{" "}
                                     {exp.end_date
                                         ? convertDate(exp.end_date, "mm-yyyy")
                                         : "Present"}
                                 </time>
                                 <p
-                                    className="mb-4 text-sm font-thin text-gray-500 dark:text-gray-400"
+                                    className="mb-4 text-sm font-thin text-gray-500 dark:text-white"
                                     dangerouslySetInnerHTML={{
                                         __html: exp.description,
                                     }}

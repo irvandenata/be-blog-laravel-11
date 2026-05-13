@@ -321,7 +321,7 @@ const LandingPage = () => {
                                 outAnimate="animate-go-away"
                                 bottom={600}
                             >
-                                <h2 className="text-lg">Frontend</h2>
+                                <h2 className="text-lg dark:text-white text-dark">Frontend</h2>
                             </AnimateSection>
                             <div className="grid lg:grid-cols-4 md:grid-cols-4 grid-cols-3 gap-5 md:gap-3 mt-4 mb-14">
                                 {techStack.frontend.map(
@@ -391,7 +391,7 @@ const LandingPage = () => {
                                 outAnimate="animate-go-away"
                                 bottom={600}
                             >
-                                <h2 className="text-lg">Backend</h2>
+                                <h2 className="text-lg dark:text-white text-dark">Backend</h2>
                             </AnimateSection>
                             <div className="grid lg:grid-cols-4 md:grid-cols-4 grid-cols-3 gap-5 md:gap-3 mt-4 mb-14">
                                 {techStack.backend.map(
@@ -461,7 +461,7 @@ const LandingPage = () => {
                                 outAnimate="animate-go-away"
                                 bottom={600}
                             >
-                                <h2 className="text-lg">Others</h2>
+                                <h2 className="text-lg dark:text-white text-dark">Others</h2>
                             </AnimateSection>
                             <div className="grid lg:grid-cols-4 md:grid-cols-4 grid-cols-3 gap-5 md:gap-3 mt-4 mb-14">
                                 {techStack.others.map(

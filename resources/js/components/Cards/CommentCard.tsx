@@ -146,7 +146,7 @@ const CommentCard: React.FC<{ articleId: string; slug: string }> = ({
                 <h3 className="text-2xl col-span-2 mb-2 font-bold dark:text-white text-dark">
                     Leave a Comment
                 </h3>
-                <p className="col-span-2 mb-4 text-sm text-gray-500 dark:text-gray-400">
+                <p className="col-span-2 mb-4 text-sm text-gray-500 dark:text-white">
                     {username !== null
                         ? "You have commented before. Your account is saved automatically — just write your comment!"
                         : "First time commenting? Enter your username and password. Your account will be saved automatically for future comments."}

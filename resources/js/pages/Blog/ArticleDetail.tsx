@@ -180,7 +180,7 @@ const ArticleDetailPage = () => {
 										>
 											<div className="place-items-start flex">
 												<div className="p-4">
-													<h3 className="text-lg font-bold mb-2">
+													<h3 className="text-lg font-bold mb-2 dark:text-white text-dark">
 														{item.title}
 													</h3>
 												</div>
