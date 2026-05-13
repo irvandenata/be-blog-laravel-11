@@ -1,6 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-Route::get('/', function () {
-    return response()->json(['message' => 'this is api route']);
-});
+
+Route::view('/{any?}', 'app')
+    ->where('any', '^(?!api).*$');

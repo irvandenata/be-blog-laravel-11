@@ -1,0 +1,93 @@
+@import url("https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    p {
+        @apply text-p;
+    }
+}
+
+@layer components {
+    .admin-panel {
+        @apply rounded-lg border border-slate-200 bg-white text-slate-950 shadow-sm dark:border-slate-800 dark:bg-slate-950 dark:text-slate-50;
+    }
+
+    .admin-panel-header {
+        @apply border-b border-slate-200 px-4 py-4 dark:border-slate-800 sm:px-6;
+    }
+
+    .admin-panel-title {
+        @apply text-base font-semibold text-slate-950 dark:text-slate-50;
+    }
+
+    .admin-form {
+        @apply grid gap-4 p-4 sm:gap-5 sm:p-6;
+    }
+
+    .admin-label {
+        @apply mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200;
+    }
+
+    .admin-input {
+        @apply w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-950 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-50 dark:disabled:bg-slate-900;
+    }
+
+    .admin-file-input {
+        @apply w-full cursor-pointer rounded-md border border-slate-200 bg-white text-sm text-slate-950 shadow-sm outline-none transition file:mr-4 file:border-0 file:border-r file:border-slate-200 file:bg-slate-100 file:px-4 file:py-2.5 file:text-sm file:font-medium file:text-slate-700 hover:file:bg-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:bg-slate-100 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-50 dark:file:border-slate-800 dark:file:bg-slate-900 dark:file:text-slate-200;
+    }
+
+    .admin-actions {
+        @apply flex flex-col-reverse gap-2 border-t border-slate-200 p-4 dark:border-slate-800 sm:flex-row sm:justify-end sm:p-6;
+    }
+
+    .admin-preview-image {
+        @apply max-h-56 w-full max-w-md cursor-zoom-in rounded-md border border-slate-200 object-cover dark:border-slate-800;
+    }
+}
+
+@layer utilities {
+    /* Chrome, Safari and Opera */
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+
+    .no-scrollbar {
+        -ms-overflow-style: none; /* IE and Edge */
+        scrollbar-width: none; /* Firefox */
+    }
+
+    .chat-height {
+        @apply h-[calc(100vh_-_8.125rem)] lg:h-[calc(100vh_-_5.625rem)];
+    }
+    .inbox-height {
+        @apply h-[calc(100vh_-_8.125rem)] lg:h-[calc(100vh_-_5.625rem)];
+    }
+}
+
+/* third-party libraries CSS */
+
+.tableCheckbox:checked ~ div span {
+    @apply opacity-100;
+}
+.tableCheckbox:checked ~ div {
+    @apply bg-primary border-primary;
+}
+
+.custom-input-date::-webkit-calendar-picker-indicator {
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 20px;
+}
+.custom-input-date-1::-webkit-calendar-picker-indicator {
+    background-image: url(./images/icon/icon-calendar.svg);
+}
+.custom-input-date-2::-webkit-calendar-picker-indicator {
+    background-image: url(./images/icon/icon-arrow-down.svg);
+}
+
+[x-cloak] {
+    display: none !important;
+}

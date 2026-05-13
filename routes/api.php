@@ -73,7 +73,16 @@ Route::group([
             'email' => request('email'),
             'body' => request('message'),
         ];
-        Mail::to('irvandta@gmail.com')->send(new SendMail($data));
+        $resend = Resend::client(env('RESEND_KEY'));
+        $resend->emails->send([
+            'from' => 'info@ivd.my.id',
+            'to' => ['irvandta@gmail.com'],
+            'subject' => 'New Message from Contact Form',
+            'html' => "<p>You have received a new message from your website contact form.</p>" .
+                "<h5>Name: " . $data['name'] . "</h5>" .
+                "<h5>Email: " . $data['email'] . "</h5>" .
+                "<p>Message: " . $data['body'] . "</p>"
+        ]);
         return response()->json([
             'message' => 'Email has been sent'
         ]);
