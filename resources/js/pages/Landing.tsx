@@ -5,6 +5,7 @@ import AnimateSection from "@/components/UI/AnimateSection";
 import { BorderMoveCard } from "@/components/UI/BorderMoveCard";
 import { TechStack } from "@/components/UI/TechStack";
 import { Button } from "@/components/UI/moving-border";
+import { SEOHead } from "@/hooks/useSEO";
 import { setCategoryFilter } from "@/redux/slices/articleSlice";
 import {
     setActiveMenu,
@@ -179,13 +180,45 @@ const LandingPage = () => {
         }
     };
 
+    const landingStructuredData = {
+        "@context": "https://schema.org",
+        "@graph": [
+            {
+                "@type": "WebSite",
+                "@id": "https://ivd.my.id/#website",
+                url: "https://ivd.my.id/",
+                name: "ivd.my.id",
+                description: header.data?.description
+                    ? header.data.description.replace(/<[^>]*>/g, "").trim()
+                    : "Personal blog and portfolio",
+                potentialAction: {
+                    "@type": "SearchAction",
+                    target: "https://ivd.my.id/blogs?search={search_term_string}",
+                    "query-input": "required name=search_term_string",
+                },
+            },
+            {
+                "@type": "Person",
+                "@id": "https://ivd.my.id/#person",
+                name: "Denata",
+                url: "https://ivd.my.id/",
+                image: header.data?.image,
+                sameAs: [],
+            },
+        ],
+    };
+
+    const seoDescription = header.data?.description
+        ? header.data.description.replace(/<[^>]*>/g, "").slice(0, 160).trim()
+        : "Personal blog and portfolio — articles about software engineering, tech, and more.";
+
     return !isLoad ? (
         <div className="h-screen w-full relative z-9999">
             <div
                 id="spinner"
                 ref={loader}
                 className="w-full dark:text-white dark:bg-dark bg-white text-dark
-                
+
                 h-screen z-99999 flex justify-center  items-center fixed top-0 left-0"
             >
                 <svg
@@ -202,6 +235,13 @@ const LandingPage = () => {
         </div>
     ) : (
         <>
+            <SEOHead
+                title="Home"
+                description={seoDescription}
+                url="/"
+                type="website"
+                structuredData={landingStructuredData}
+            />
             <div
                 id="home"
                 ref={homeRef}

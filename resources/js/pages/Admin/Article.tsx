@@ -63,6 +63,8 @@ const Article = () => {
     const statusField = useRef<any>("");
     const imageField = useRef<any>("");
     const categoryField = useRef<any>("");
+    const metaDescriptionField = useRef<any>("");
+    const metaKeywordsField = useRef<any>("");
 
     const loadData = () => {
         toast
@@ -108,6 +110,8 @@ const Article = () => {
         statusField.current.value = "";
         imageField.current.value = "";
         categoryField.current.value = "";
+        metaDescriptionField.current.value = "";
+        metaKeywordsField.current.value = "";
         setContent("");
         setImageData(undefined);
         preview.current!.src = "";
@@ -142,6 +146,8 @@ const Article = () => {
             "category_id",
             categoryField.current.getAttribute("data-id")
         );
+        formData.append("meta_description", metaDescriptionField.current.value);
+        formData.append("meta_keywords", metaKeywordsField.current.value);
 
         if (selectedId.length > 0) {
             selectedId.forEach((id: any) => {
@@ -209,6 +215,8 @@ const Article = () => {
             categoryField.current.value = res.data.category_name;
             categoryField.current.disabled = false;
             statusField.current.value = res.data.status;
+            metaDescriptionField.current.value = res.data.meta_description ?? "";
+            metaKeywordsField.current.value = res.data.meta_keywords ?? "";
             imageField.current.disabled = false;
             dispatch(
                 storeDataState({
@@ -253,6 +261,8 @@ const Article = () => {
             "category_id",
             categoryField.current.getAttribute("data-id")
         );
+        formData.append("meta_description", metaDescriptionField.current.value);
+        formData.append("meta_keywords", metaKeywordsField.current.value);
         if (imageFile) {
             formData.append("image", imageFile);
         }
@@ -433,6 +443,33 @@ const Article = () => {
                                             Tags
                                         </label>
                                         <MultiSelect id="tags"></MultiSelect>
+                                    </div>
+                                    <div>
+                                        <label className="admin-label">
+                                            Meta Description
+                                            <span className="ml-1 text-xs text-gray-400 font-normal">(max 160 chars — untuk SEO)</span>
+                                        </label>
+                                        <textarea
+                                            className="admin-input resize-none"
+                                            id="meta_description"
+                                            placeholder="Deskripsi singkat artikel untuk mesin pencari (Google, Bing)..."
+                                            rows={3}
+                                            maxLength={160}
+                                            ref={metaDescriptionField}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="admin-label">
+                                            Meta Keywords
+                                            <span className="ml-1 text-xs text-gray-400 font-normal">(pisahkan dengan koma — untuk SEO)</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            className="admin-input"
+                                            id="meta_keywords"
+                                            placeholder="contoh: laravel, react, tutorial, programming"
+                                            ref={metaKeywordsField}
+                                        />
                                     </div>
                                     <div>
                                         <label className="admin-label">

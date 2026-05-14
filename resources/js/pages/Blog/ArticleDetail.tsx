@@ -1,5 +1,6 @@
 import CommentCard from "@/components/Cards/CommentCard";
 import { IArticle } from "@/interfaces/article";
+import { SEOHead } from "@/hooks/useSEO";
 import { setActiveMenu } from "@/redux/slices/landingSlice";
 import { getDataBySlug, fetchDataNoAuth } from "@/services/article";
 import { convertDate } from "@/utils/common";
@@ -7,12 +8,14 @@ import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/UI/moving-border";
+
 const ArticleDetailPage = () => {
 	const [article, setArticle] = useState<IArticle | null>(null);
 	const [articles, setArticles] = useState<IArticle[]>([]);
 	const param = useParams<{ slug: string }>();
 	const dispatch = useDispatch();
 	const navigate = useNavigate();
+
 	useEffect(() => {
 		if (!param.slug) {
 			navigate("/not-found");
@@ -35,7 +38,6 @@ const ArticleDetailPage = () => {
 			.then((res) => {
 				if (!isCurrent) return;
 				setArticle(res.data);
-				// set cookies just for one day
 				const date = new Date();
 				date.setTime(date.getTime() + 24 * 60 * 60 * 1000);
 				document.cookie = `viwed-${
@@ -46,7 +48,6 @@ const ArticleDetailPage = () => {
 				if (!isCurrent) return;
 				navigate("/not-found");
 			});
-		// get flag count form cookies
 		return () => {
 			isCurrent = false;
 		};
@@ -62,7 +63,6 @@ const ArticleDetailPage = () => {
 		})
 			.then((res) => {
 				if (!isCurrent) return;
-				// filter out the current article from related articles and set 3 articles
 				if (article) {
 					const relatedArticles = res.data.filter(
 						(item: IArticle) => article.slug !== item.slug
@@ -82,8 +82,76 @@ const ArticleDetailPage = () => {
 		window.scrollTo(0, 0);
 	}, [article?.slug]);
 
+	const buildArticleStructuredData = (art: IArticle) => {
+		const plainContent = art.content
+			? art.content.replace(/<[^>]*>/g, "").slice(0, 300).trim()
+			: "";
+		const description =
+			art.meta_description ||
+			art.subtitle ||
+			plainContent ||
+			art.title;
+
+		return {
+			"@context": "https://schema.org",
+			"@type": "Article",
+			headline: art.title,
+			description: description.slice(0, 160),
+			image: art.image_url
+				? [art.image_url]
+				: ["https://ivd.my.id/og-default.jpg"],
+			datePublished: art.created_at,
+			dateModified: art.updated_at || art.created_at,
+			author: {
+				"@type": "Person",
+				name: "Denata",
+				url: "https://ivd.my.id/",
+			},
+			publisher: {
+				"@type": "Person",
+				name: "Denata",
+				url: "https://ivd.my.id/",
+			},
+			mainEntityOfPage: {
+				"@type": "WebPage",
+				"@id": `https://ivd.my.id/blogs/${art.slug}`,
+			},
+			keywords: art.tags?.map((t) => t.name).join(", "),
+			articleSection: art.category_name || art.category?.name,
+			url: `https://ivd.my.id/blogs/${art.slug}`,
+		};
+	};
+
+	const getSeoDescription = (art: IArticle): string => {
+		if (art.meta_description) return art.meta_description.slice(0, 160);
+		if (art.subtitle) return art.subtitle.slice(0, 160);
+		const plain = art.content
+			? art.content.replace(/<[^>]*>/g, "").trim()
+			: "";
+		return plain.slice(0, 160) || art.title;
+	};
+
+	const getSeoKeywords = (art: IArticle): string => {
+		const tags = art.tags?.map((t) => t.name) ?? [];
+		if (art.meta_keywords) return art.meta_keywords;
+		if (art.category_name) tags.unshift(art.category_name);
+		return tags.join(", ");
+	};
+
 	return article ? (
 		<>
+			<SEOHead
+				title={article.title}
+				description={getSeoDescription(article)}
+				keywords={getSeoKeywords(article)}
+				image={article.image_url}
+				url={`/blogs/${article.slug}`}
+				type="article"
+				publishedTime={article.created_at}
+				modifiedTime={article.updated_at}
+				author="Denata"
+				structuredData={buildArticleStructuredData(article)}
+			/>
 			<div
 				id="article"
 				className="w-full min-h-screen relative z-10 dark:bg-dark bg-white  lg:pt-30 text-dark  dark:text-white"
@@ -137,7 +205,7 @@ const ArticleDetailPage = () => {
 				>
 					<img
 						src={article?.image_url ?? "https://picsum.photos/id/237/200/300"}
-						alt="article"
+						alt={article?.title}
 						className="w-full   rounded-xl border-2 border-bodydark2 h-full object-cover"
 					/>
 				</div>
@@ -145,8 +213,6 @@ const ArticleDetailPage = () => {
 					<div
 						className="prose-revert"
 						style={{
-							// width: "calc(100% - 100px)",
-							// margin: "0 auto",
 							textAlign: "justify",
 						}}
 						dangerouslySetInnerHTML={{

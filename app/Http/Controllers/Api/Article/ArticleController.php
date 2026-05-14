@@ -23,8 +23,8 @@ class ArticleController extends Controller
     use BaseCrudTrait;
     public function __construct()
     {
-        $storeFields = ['title', 'content', 'category_id', 'image', 'status'];
-        $updateFields = ['title', 'content', 'category_id', 'image', 'status'];
+        $storeFields = ['title', 'content', 'category_id', 'image', 'status', 'meta_description', 'meta_keywords'];
+        $updateFields = ['title', 'content', 'category_id', 'image', 'status', 'meta_description', 'meta_keywords'];
         $appendRelation = ['tags'];
         $this->with = ['category', 'tags','images'];
         $this->imageField = 'image';

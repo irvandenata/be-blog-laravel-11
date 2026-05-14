@@ -53,6 +53,9 @@ export interface IArticle {
     category_id?: number;
     category_name?: string;
     views: number;
+    meta_description?: string;
+    meta_keywords?: string;
+    status?: string;
 }
 
 export interface IArticleTable {

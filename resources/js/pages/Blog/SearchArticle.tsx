@@ -1,6 +1,7 @@
 import Card3D from "@/components/Cards/Card3D";
 import AnimateSection from "@/components/UI/AnimateSection";
 import { IArticle } from "@/interfaces/article";
+import { SEOHead } from "@/hooks/useSEO";
 import { setActiveMenu } from "@/redux/slices/landingSlice";
 import { fetchDataCategories, fetchDataNoAuth } from "@/services/article";
 import { useEffect, useRef, useState } from "react";
@@ -67,8 +68,30 @@ const SearchArticlePage = () => {
         });
     }, [search, category]);
 
+    const blogsStructuredData = {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        name: "Articles & Blog | ivd.my.id",
+        description:
+            "Browse articles and blog posts about software engineering, technology, and more.",
+        url: "https://ivd.my.id/blogs",
+        author: {
+            "@type": "Person",
+            name: "Denata",
+            url: "https://ivd.my.id/",
+        },
+    };
+
     return (
         <div id="article-content">
+            <SEOHead
+                title="Articles & Blog"
+                description="Browse articles and blog posts about software engineering, technology, and more. Dedicated to thoughts and ideas that stopped by in my head."
+                keywords="blog, articles, software engineering, technology, programming"
+                url="/blogs"
+                type="website"
+                structuredData={blogsStructuredData}
+            />
             <div
                 id="home"
                 className="flex flex-col items-center text-center text-dark dark:text-bodydark1  justify-center relative z-10 pt-40 pb-10"

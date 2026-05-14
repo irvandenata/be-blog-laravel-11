@@ -5,13 +5,16 @@ import "./index.css";
 import { ThemeProvider } from "@material-tailwind/react";
 import { Provider } from "react-redux";
 import store from "@/redux/store";
+import { HelmetProvider } from "react-helmet-async";
 
 createRoot(document.getElementById("root")!).render(
     <StrictMode>
-        <Provider store={store}>
-            <ThemeProvider>
-                <App />
-            </ThemeProvider>
-        </Provider>
+        <HelmetProvider>
+            <Provider store={store}>
+                <ThemeProvider>
+                    <App />
+                </ThemeProvider>
+            </Provider>
+        </HelmetProvider>
     </StrictMode>
 );
