@@ -1,4 +1,5 @@
 import CommentCard from "@/components/Cards/CommentCard";
+import { ArticleImagePlaceholder } from "@/components/UI/ArticleImagePlaceholder";
 import { IArticle } from "@/interfaces/article";
 import { SEOHead } from "@/hooks/useSEO";
 import { setActiveMenu } from "@/redux/slices/landingSlice";
@@ -203,11 +204,18 @@ const ArticleDetailPage = () => {
 					id="article-image"
 					className="w-full lg:px-5 md:px-5 lg:mb-20 mb:mb-20 mb-10  lg:h-[600px] md:h-[600px] animate-fade-on"
 				>
-					<img
-						src={article?.image_url ?? "https://picsum.photos/id/237/200/300"}
-						alt={article?.title}
-						className="w-full   rounded-xl border-2 border-bodydark2 h-full object-cover"
-					/>
+					{article?.image_url ? (
+						<img
+							src={article.image_url}
+							alt={article.title}
+							className="w-full rounded-xl border-2 border-bodydark2 h-full object-cover"
+						/>
+					) : (
+						<ArticleImagePlaceholder
+							title={article.title}
+							category={article.category_name ?? article.category?.name}
+						/>
+					)}
 				</div>
 				<div className="w-full lg:px-60 ">
 					<div
