@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
-use Resend;
+use Illuminate\Support\Facades\Mail;
 
 class ArticleEloquentRepository extends BaseEloquentRepository
 {
@@ -220,18 +220,18 @@ class ArticleEloquentRepository extends BaseEloquentRepository
         try {
             // find acticle 
             $article = $this->model->findOrFail($request->article_id);
-            $resend = Resend::client(env('RESEND_KEY'));
 
-            $resend->emails->send([
-                'from' => 'info@ivd.my.id',
-                'to' => ['irvandta@gmail.com'],
-                'subject' => 'New Comment Created',
-                'html' => "<p>A new comment has been created.</p>" .
-                    "<h5>Article Title <br/>" . $article->title . "</h5>" .
-                    "<p>User : " . $request->username . "</p>" .
-                    "<p>Comment: " . $request->comment . "</p>" .
-                    "<a href='http://ivd.my.id/blogs/" . $article->slug . "'>View Article</a>"
-            ]);
+            Mail::html(
+                "<p>A new comment has been created.</p>" .
+                "<h5>Article Title <br/>" . $article->title . "</h5>" .
+                "<p>User : " . $request->username . "</p>" .
+                "<p>Comment: " . $request->comment . "</p>" .
+                "<a href='http://ivd.my.id/blogs/" . $article->slug . "'>View Article</a>",
+                function ($message) {
+                    $message->to('irvandta@gmail.com')
+                        ->subject('New Comment Created');
+                }
+            );
             $comment = Comment::create([
                 'article_id' => $request->article_id,
                 'user_id' => $request->user_id,
