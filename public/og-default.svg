@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="630" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1C2434"/>
+      <stop offset="0.55" stop-color="#3A1A26"/>
+      <stop offset="1" stop-color="#81263A"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0" cy="0" r="1" gradientTransform="translate(940 130) scale(460)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#81263A" stop-opacity="0.75"/>
+      <stop offset="1" stop-color="#81263A" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
+      <path d="M48 0H0V48" stroke="#FFFFFF" stroke-opacity="0.05" stroke-width="1" fill="none"/>
+    </pattern>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#grid)"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+
+  <circle cx="940" cy="130" r="210" stroke="#FFFFFF" stroke-opacity="0.08" stroke-width="1.5" fill="none"/>
+  <circle cx="940" cy="130" r="320" stroke="#FFFFFF" stroke-opacity="0.05" stroke-width="1.5" fill="none"/>
+
+  <g transform="translate(96 236)">
+    <rect x="0" y="0" width="86" height="6" rx="3" fill="#81263A"/>
+    <text x="0" y="86" font-family="Georgia, 'Times New Roman', serif" font-size="76" font-weight="700" fill="#FFFFFF">Artikel</text>
+    <text x="0" y="168" font-family="Georgia, 'Times New Roman', serif" font-size="76" font-weight="700" fill="#FFFFFF" fill-opacity="0.55">tanpa gambar</text>
+    <text x="0" y="232" font-family="Helvetica, Arial, sans-serif" font-size="24" letter-spacing="4" fill="#FFFFFF" fill-opacity="0.45">BACA SELENGKAPNYA →</text>
+  </g>
+</svg>
