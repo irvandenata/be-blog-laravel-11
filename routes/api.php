@@ -82,6 +82,8 @@ Route::group([
         ], function () {
             Route::get('/', [App\Http\Controllers\Api\SettingController::class, 'getData'])->name('get-data');
             Route::post('/', [App\Http\Controllers\Api\SettingController::class, 'updateData'])->name('update-data');
+            Route::get('/seo', [App\Http\Controllers\Api\SeoSettingController::class, 'index']);
+            Route::post('/seo', [App\Http\Controllers\Api\SeoSettingController::class, 'update']);
         });
 
         Route::group([
