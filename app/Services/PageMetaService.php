@@ -17,10 +17,75 @@ class PageMetaService
 {
     private const DESCRIPTION_LIMIT = 160;
 
+    /** Locale of the request being resolved; set by forPath(). */
+    private string $locale = 'id';
+
     public function forPath(string $path): array
     {
         $path = '/' . trim($path, '/');
 
+        // "/en/..." is the English mount of the same route tree. Resolve meta
+        // against the locale-less path, then stamp the locale back on.
+        $this->locale = ($path === '/en' || Str::startsWith($path, '/en/')) ? 'en' : 'id';
+        $bare = $this->locale === 'en'
+            ? ('/' . trim(Str::after($path, '/en'), '/'))
+            : $path;
+
+        $meta = $this->metaForBarePath($bare);
+
+        return array_merge($meta, [
+            'canonical' => $this->localizeUrl($meta['canonical'] ?? $this->baseUrl()),
+            'alternates' => $this->alternates($bare, $meta['robots'] ?? 'index, follow'),
+        ]);
+    }
+
+    /**
+     * Moves an Indonesian canonical URL onto the /en mount when English is the
+     * locale being served, so each language self-canonicalises.
+     */
+    private function localizeUrl(string $url): string
+    {
+        if ($this->locale !== 'en') {
+            return $url;
+        }
+
+        $baseUrl = $this->baseUrl();
+        $suffix = Str::startsWith($url, $baseUrl) ? Str::after($url, $baseUrl) : $url;
+        $suffix = rtrim($suffix, '/');
+
+        return $baseUrl . '/en' . $suffix;
+    }
+
+    /**
+     * Locale-resolved article field, falling back to Indonesian when the English
+     * column is empty — the same rule ArticleResource applies for the SPA, so a
+     * crawler and a reader never see different languages for one URL.
+     */
+    private function articleField(Article $article, string $field): ?string
+    {
+        $original = $article->{$field};
+
+        if ($this->locale !== 'en') {
+            return $original;
+        }
+
+        $translated = $article->{"{$field}_en"};
+
+        return filled(is_string($translated) ? trim($translated) : $translated)
+            ? $translated
+            : $original;
+    }
+
+    /** BCP-47 language tag for schema.org, following the requested locale. */
+    private function schemaLanguage(): string
+    {
+        return $this->locale === 'en'
+            ? 'en'
+            : str_replace('_', '-', SeoSetting::get('locale', 'id_ID'));
+    }
+
+    private function metaForBarePath(string $path): array
+    {
         if ($path === '/blogs') {
             return $this->blogIndex();
         }
@@ -34,6 +99,26 @@ class PageMetaService
         }
 
         return $this->defaults($path);
+    }
+
+    /**
+     * hreflang map. Skipped for noindex pages, where pointing crawlers at a
+     * translation of a page we asked them to ignore is contradictory.
+     */
+    private function alternates(string $barePath, string $robots): array
+    {
+        if (Str::contains($robots, 'noindex')) {
+            return [];
+        }
+
+        $baseUrl = $this->baseUrl();
+        $suffix = $barePath === '/' ? '' : $barePath;
+
+        return [
+            'id' => $baseUrl . ($suffix === '' ? '/' : $suffix),
+            'en' => $baseUrl . '/en' . $suffix,
+            'x-default' => $baseUrl . ($suffix === '' ? '/' : $suffix),
+        ];
     }
 
     private function isPrivatePath(string $path): bool
@@ -71,7 +156,11 @@ class PageMetaService
     {
         return [
             'site_name' => SeoSetting::get('site_name', 'ivd.my.id'),
-            'locale' => SeoSetting::get('locale', 'id_ID'),
+            // og:locale and <html lang> must match the URL that was requested,
+            // not just the site-wide default.
+            'locale' => $this->locale === 'en'
+                ? 'en_US'
+                : SeoSetting::get('locale', 'id_ID'),
             'author' => SeoSetting::get('author_name', 'Irvan Denata'),
             'author_url' => SeoSetting::get('author_url', $this->baseUrl()),
             'twitter_handle' => SeoSetting::get('twitter_handle'),
@@ -146,7 +235,9 @@ class PageMetaService
         $image = $this->articleImage($article);
         $isPublished = $article->status === 'publish';
 
-        $keywords = $article->meta_keywords
+        $title = $this->articleField($article, 'title');
+
+        $keywords = $this->articleField($article, 'meta_keywords')
             ?: collect([$article->category?->name])
                 ->merge($article->tags->pluck('name'))
                 ->filter()
@@ -154,7 +245,7 @@ class PageMetaService
                 ->implode(', ');
 
         return array_merge($this->common(), [
-            'title' => $this->title($article->title),
+            'title' => $this->title($title),
             'description' => $description,
             'keywords' => $keywords,
             'canonical' => $url,
@@ -174,7 +265,7 @@ class PageMetaService
                     $this->breadcrumbSchema([
                         ['name' => 'Home', 'item' => $baseUrl . '/'],
                         ['name' => SeoSetting::get('blog_title', 'Blog'), 'item' => $baseUrl . '/blogs'],
-                        ['name' => $article->title, 'item' => $url],
+                        ['name' => $title, 'item' => $url],
                     ]),
                     $this->articleSchema($article, $url, $description, $image, $keywords),
                 ]
@@ -184,11 +275,16 @@ class PageMetaService
 
     private function articleDescription(Article $article): string
     {
-        $candidate = $article->meta_description
-            ? html_entity_decode($article->meta_description, ENT_QUOTES | ENT_HTML5, 'UTF-8')
-            : $this->plainText($article->content ?? '');
+        $metaDescription = $this->articleField($article, 'meta_description');
 
-        return $this->truncateOnWord(trim($candidate) ?: $article->title, self::DESCRIPTION_LIMIT);
+        $candidate = $metaDescription
+            ? html_entity_decode($metaDescription, ENT_QUOTES | ENT_HTML5, 'UTF-8')
+            : $this->plainText($this->articleField($article, 'content') ?? '');
+
+        return $this->truncateOnWord(
+            trim($candidate) ?: ($this->articleField($article, 'title') ?? ''),
+            self::DESCRIPTION_LIMIT
+        );
     }
 
     /**
@@ -249,7 +345,7 @@ class PageMetaService
             'name' => SeoSetting::get('site_name', 'ivd.my.id'),
             'url' => $baseUrl . '/',
             'description' => SeoSetting::get('default_description', ''),
-            'inLanguage' => str_replace('_', '-', SeoSetting::get('locale', 'id_ID')),
+            'inLanguage' => $this->schemaLanguage(),
             'publisher' => ['@id' => $baseUrl . '/#person'],
             'potentialAction' => [
                 '@type' => 'SearchAction',
@@ -292,7 +388,7 @@ class PageMetaService
             'name' => $title,
             'description' => $description,
             'url' => $baseUrl . '/blogs',
-            'inLanguage' => str_replace('_', '-', SeoSetting::get('locale', 'id_ID')),
+            'inLanguage' => $this->schemaLanguage(),
             'author' => ['@id' => $baseUrl . '/#person'],
             'blogPost' => $articles->map(fn ($a) => [
                 '@type' => 'BlogPosting',
@@ -306,14 +402,16 @@ class PageMetaService
     private function articleSchema(Article $article, string $url, string $description, string $image, string $keywords): array
     {
         $baseUrl = $this->baseUrl();
-        $wordCount = str_word_count(strip_tags($article->content ?? ''));
+        $title = $this->articleField($article, 'title') ?? '';
+        $content = $this->articleField($article, 'content') ?? '';
+        $wordCount = str_word_count(strip_tags($content));
 
         return array_filter([
             '@context' => 'https://schema.org',
             '@type' => 'BlogPosting',
             '@id' => $url . '#article',
-            'headline' => Str::limit($article->title, 110, ''),
-            'name' => $article->title,
+            'headline' => Str::limit($title, 110, ''),
+            'name' => $title,
             'description' => $description,
             'image' => [$image],
             'url' => $url,
@@ -330,9 +428,9 @@ class PageMetaService
             'articleSection' => $article->category?->name,
             'keywords' => $keywords ?: null,
             'wordCount' => $wordCount ?: null,
-            'inLanguage' => str_replace('_', '-', SeoSetting::get('locale', 'id_ID')),
+            'inLanguage' => $this->schemaLanguage(),
             // Plain-text body: what LLM crawlers actually ingest.
-            'articleBody' => Str::limit($this->plainText($article->content ?? ''), 5000, '') ?: null,
+            'articleBody' => Str::limit($this->plainText($content), 5000, '') ?: null,
         ]);
     }
 

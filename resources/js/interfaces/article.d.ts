@@ -56,6 +56,16 @@ export interface IArticle {
     meta_description?: string;
     meta_keywords?: string;
     status?: string;
+    // English translations. Present on admin payloads for editing; on public
+    // payloads title/content already hold the locale-resolved value.
+    title_en?: string | null;
+    content_en?: string | null;
+    meta_description_en?: string | null;
+    meta_keywords_en?: string | null;
+    // Set by ArticleResource: false when EN was requested but no translation
+    // exists, so the reader can be told they are seeing the Indonesian text.
+    locale?: string;
+    is_translated?: boolean;
 }
 
 export interface IArticleTable {

@@ -48,6 +48,9 @@ const CustomInformation = () => {
     const titleField = useRef<any>("");
     const subtitleField = useRef<any>("");
     const descriptionField = useRef<any>("");
+    // English translations; blank means the /en pages reuse the Indonesian text.
+    const titleEnField = useRef<any>("");
+    const descriptionEnField = useRef<any>("");
     const iconField = useRef<any>("");
     const linkField = useRef<any>("");
     const imageField = useRef<any>("");
@@ -85,6 +88,8 @@ const CustomInformation = () => {
         titleField!.current.value = "";
         subtitleField!.current.value = "";
         descriptionField!.current.value = "";
+        titleEnField!.current.value = "";
+        descriptionEnField!.current.value = "";
         iconField!.current.value = "";
         linkField!.current.value = "";
         typeField!.current.value = "";
@@ -104,6 +109,8 @@ const CustomInformation = () => {
         titleField.current.value = "";
         subtitleField.current.value = "";
         descriptionField.current.value = "";
+        titleEnField.current.value = "";
+        descriptionEnField.current.value = "";
         iconField.current.value = "";
         linkField.current.value = "";
         imageField.current.value = "";
@@ -131,6 +138,11 @@ const CustomInformation = () => {
         formData.append("title", titleField.current.value);
         formData.append("subtitle", subtitleField.current.value);
         formData.append("description", descriptionField.current.value);
+        formData.append("title_en", titleEnField.current.value ?? "");
+        formData.append(
+            "description_en",
+            descriptionEnField.current.value ?? ""
+        );
         formData.append("icon", iconField.current.value);
         formData.append("link", linkField.current.value);
         formData.append(
@@ -205,6 +217,8 @@ const CustomInformation = () => {
             subtitleField.current.value = res.data.subtitle;
             descriptionField.current.disabled = false;
             descriptionField.current.value = res.data.description;
+            titleEnField.current.value = res.data.title_en ?? "";
+            descriptionEnField.current.value = res.data.description_en ?? "";
             iconField.current.disabled = false;
             iconField.current.value = res.data.icon;
             linkField.current.disabled = false;
@@ -236,6 +250,11 @@ const CustomInformation = () => {
         formData.append("title", titleField.current.value);
         formData.append("subtitle", subtitleField.current.value);
         formData.append("description", descriptionField.current.value);
+        formData.append("title_en", titleEnField.current.value ?? "");
+        formData.append(
+            "description_en",
+            descriptionEnField.current.value ?? ""
+        );
         formData.append("icon", iconField.current.value);
         formData.append("link", linkField.current.value);
         formData.append(
@@ -337,6 +356,21 @@ const CustomInformation = () => {
                             </div>
                             <div className="mb-4">
                                 <label className="admin-label">
+                                    Title (English)
+                                    <span className="ml-1 text-xs text-gray-400 font-normal">
+                                        (opsional)
+                                    </span>
+                                </label>
+                                <input
+                                    type="text"
+                                    className="admin-input"
+                                    id="title_en"
+                                    placeholder="English title"
+                                    ref={titleEnField}
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <label className="admin-label">
                                     Subtitle
                                 </label>
                                 <input
@@ -427,6 +461,21 @@ const CustomInformation = () => {
                                     placeholder="Description"
                                     required
                                     ref={descriptionField}
+                                />
+                            </div>
+                            <div className="mb-4">
+                                <label className="admin-label">
+                                    Description (English)
+                                    <span className="ml-1 text-xs text-gray-400 font-normal">
+                                        (opsional — kosongkan untuk pakai
+                                        deskripsi Indonesia di /en)
+                                    </span>
+                                </label>
+                                <textarea
+                                    className="admin-input min-h-28"
+                                    id="description_en"
+                                    placeholder="English description"
+                                    ref={descriptionEnField}
                                 />
                             </div>
                         </form>

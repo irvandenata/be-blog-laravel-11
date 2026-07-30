@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>be-blog-laravel Knowledge Graph</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f8f9fa; }
+        #graph { width: 100vw; height: 100vh; background: white; }
+        .node { stroke: #fff; stroke-width: 2px; cursor: pointer; }
+        .link { stroke: #d0d0d0; stroke-opacity: 0.3; }
+        #info { position: absolute; top: 20px; left: 20px; background: white; padding: 20px;
+                border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.12); max-width: 340px;
+                display: none; z-index: 10; }
+        #info h3 { margin: 0 0 12px 0; color: #1f2937; font-size: 16px; }
+        #info p { margin: 0 0 8px 0; font-size: 13px; color: #4b5563; line-height: 1.5; }
+        .close { float: right; cursor: pointer; font-size: 22px; color: #ccc; }
+        .stats { position: absolute; bottom: 20px; right: 20px; background: white; padding: 18px 24px;
+                 border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.12); font-size: 13px;
+                 line-height: 1.8; color: #4b5563; }
+    </style>
+</head>
+<body>
+    <div id="graph"></div>
+    <div id="info">
+        <span class="close" onclick="document.getElementById('info').style.display='none'">×</span>
+        <h3 id="node-name"></h3>
+        <p id="node-desc"></p>
+        <p><small id="node-type"></small></p>
+    </div>
+    <div class="stats">
+        <strong>2,999 Nodes</strong><br>
+        <strong>3,741 Edges</strong><br>
+        <strong>343 Communities</strong>
+    </div>
+
+    <script>
+        fetch('graph.json')
+            .then(r => r.json())
+            .then(fullGraph => {
+                const nodes = fullGraph.nodes;
+                const links = fullGraph.links;
+                const width = window.innerWidth, height = window.innerHeight;
+                const svg = d3.select("#graph").append("svg").attr("width", width).attr("height", height);
+                const colors = d3.schemeCategory10;
+
+                const sim = d3.forceSimulation(nodes)
+                    .force("link", d3.forceLink(links).id(d => d.id).distance(50))
+                    .force("charge", d3.forceManyBody().strength(-500))
+                    .force("center", d3.forceCenter(width/2, height/2))
+                    .force("collision", d3.forceCollide(10));
+
+                const link = svg.append("g").selectAll("line").data(links).enter()
+                    .append("line").attr("class", "link").attr("stroke-width", 1);
+
+                const node = svg.append("g").selectAll("circle").data(nodes).enter()
+                    .append("circle").attr("class", "node")
+                    .attr("r", d => Math.max(4, Math.min(12, Math.sqrt(d.degree || 1) * 1.5)))
+                    .attr("fill", d => colors[(d.__clusterId || 0) % 10])
+                    .call(d3.drag()
+                        .on("start", e => { if (!e.active) sim.alphaTarget(0.3).restart(); e.subject.fx = e.subject.x; e.subject.fy = e.subject.y; })
+                        .on("drag", e => { e.subject.fx = e.x; e.subject.fy = e.y; })
+                        .on("end", e => { if (!e.active) sim.alphaTarget(0); e.subject.fx = null; e.subject.fy = null; }))
+                    .on("click", (e, d) => {
+                        document.getElementById("node-name").textContent = d.label || d.id;
+                        document.getElementById("node-desc").textContent = d.description || "(no description)";
+                        document.getElementById("node-type").textContent = "Type: " + (d.type || "?") + " | Confidence: " + (d.confidence || "?");
+                        document.getElementById("info").style.display = "block";
+                    });
+
+                sim.on("tick", () => {
+                    link.attr("x1", d => d.source.x).attr("y1", d => d.source.y)
+                        .attr("x2", d => d.target.x).attr("y2", d => d.target.y);
+                    node.attr("cx", d => d.x).attr("cy", d => d.y);
+                });
+            });
+    </script>
+</body>
+</html>

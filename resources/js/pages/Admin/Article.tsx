@@ -43,6 +43,7 @@ const Article = () => {
         dispatch(setMenu("Article"));
     }, []);
     const [content, setContent] = useState<any>();
+    const [contentEn, setContentEn] = useState<any>();
     const selectedId = useSelector((state: any) => state.data.selectedOption);
 
     const [onProccess, setOnProccess] = useState(false);
@@ -65,6 +66,12 @@ const Article = () => {
     const categoryField = useRef<any>("");
     const metaDescriptionField = useRef<any>("");
     const metaKeywordsField = useRef<any>("");
+    // English translations. Optional everywhere: a blank EN field means the
+    // public /en pages fall back to the Indonesian text.
+    const titleEnField = useRef<any>("");
+    const contentEnField = useRef<any>();
+    const metaDescriptionEnField = useRef<any>("");
+    const metaKeywordsEnField = useRef<any>("");
 
     const loadData = () => {
         toast
@@ -112,7 +119,12 @@ const Article = () => {
         categoryField.current.value = "";
         metaDescriptionField.current.value = "";
         metaKeywordsField.current.value = "";
+        titleEnField.current.value = "";
+        contentEnField.current = "";
+        metaDescriptionEnField.current.value = "";
+        metaKeywordsEnField.current.value = "";
         setContent("");
+        setContentEn("");
         setImageData(undefined);
         preview.current!.src = "";
         preview.current!.hidden = true;
@@ -148,6 +160,16 @@ const Article = () => {
         );
         formData.append("meta_description", metaDescriptionField.current.value);
         formData.append("meta_keywords", metaKeywordsField.current.value);
+        formData.append("title_en", titleEnField.current.value ?? "");
+        formData.append("content_en", contentEnField.current ?? "");
+        formData.append(
+            "meta_description_en",
+            metaDescriptionEnField.current.value ?? ""
+        );
+        formData.append(
+            "meta_keywords_en",
+            metaKeywordsEnField.current.value ?? ""
+        );
 
         if (selectedId.length > 0) {
             selectedId.forEach((id: any) => {
@@ -217,6 +239,16 @@ const Article = () => {
             statusField.current.value = res.data.status;
             metaDescriptionField.current.value = res.data.meta_description ?? "";
             metaKeywordsField.current.value = res.data.meta_keywords ?? "";
+            titleEnField.current.value = res.data.title_en ?? "";
+            metaDescriptionEnField.current.value =
+                res.data.meta_description_en ?? "";
+            metaKeywordsEnField.current.value = res.data.meta_keywords_en ?? "";
+            contentEnField.current = res.data.content_en ?? "";
+            // TextEditor destructures the raw htmlToDraft result itself, so pass
+            // it through unconverted — same as the Indonesian content above.
+            setContentEn(
+                res.data.content_en ? htmlToDraft(res.data.content_en) : ""
+            );
             imageField.current.disabled = false;
             dispatch(
                 storeDataState({
@@ -263,6 +295,16 @@ const Article = () => {
         );
         formData.append("meta_description", metaDescriptionField.current.value);
         formData.append("meta_keywords", metaKeywordsField.current.value);
+        formData.append("title_en", titleEnField.current.value ?? "");
+        formData.append("content_en", contentEnField.current ?? "");
+        formData.append(
+            "meta_description_en",
+            metaDescriptionEnField.current.value ?? ""
+        );
+        formData.append(
+            "meta_keywords_en",
+            metaKeywordsEnField.current.value ?? ""
+        );
         if (imageFile) {
             formData.append("image", imageFile);
         }
@@ -375,6 +417,23 @@ const Article = () => {
 
                                     <div>
                                         <label className="admin-label">
+                                            Title (English)
+                                            <span className="ml-1 text-xs text-gray-400 font-normal">
+                                                (opsional — kosongkan untuk pakai
+                                                judul Indonesia di /en)
+                                            </span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            className="admin-input"
+                                            id="title_en"
+                                            placeholder="English title"
+                                            ref={titleEnField}
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="admin-label">
                                             Category
                                         </label>
                                         <SearchableSelect
@@ -473,11 +532,55 @@ const Article = () => {
                                     </div>
                                     <div>
                                         <label className="admin-label">
+                                            Meta Description (English)
+                                            <span className="ml-1 text-xs text-gray-400 font-normal">
+                                                (opsional — max 160 chars)
+                                            </span>
+                                        </label>
+                                        <textarea
+                                            className="admin-input resize-none"
+                                            id="meta_description_en"
+                                            placeholder="Short English description for search engines..."
+                                            rows={3}
+                                            maxLength={160}
+                                            ref={metaDescriptionEnField}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="admin-label">
+                                            Meta Keywords (English)
+                                            <span className="ml-1 text-xs text-gray-400 font-normal">
+                                                (opsional — pisahkan dengan koma)
+                                            </span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            className="admin-input"
+                                            id="meta_keywords_en"
+                                            placeholder="e.g. laravel, react, tutorial"
+                                            ref={metaKeywordsEnField}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="admin-label">
                                             Content
                                         </label>
                                         <TextEditor
                                             content={content}
                                             field={contentField}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="admin-label">
+                                            Content (English)
+                                            <span className="ml-1 text-xs text-gray-400 font-normal">
+                                                (opsional — kosongkan untuk pakai
+                                                konten Indonesia di /en)
+                                            </span>
+                                        </label>
+                                        <TextEditor
+                                            content={contentEn}
+                                            field={contentEnField}
                                         />
                                     </div>
 

@@ -10,6 +10,7 @@ import {
   IconMail,
   IconSettings,
   IconTags,
+  IconUser,
   IconWorldSearch,
   IconX,
 } from "@tabler/icons-react";
@@ -43,6 +44,11 @@ const menuGroups = [
           },
           { label: "Tag", to: "/admin/article/tags", icon: IconTags },
         ],
+      },
+      {
+        label: "About",
+        to: "/admin/about",
+        icon: IconUser,
       },
       {
         label: "Custom Information",

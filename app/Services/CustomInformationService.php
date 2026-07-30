@@ -47,6 +47,18 @@ class CustomInformationService extends BaseService
                     ]
                 ]);
             }
+
+            // Ascending counterpart, used by the About page so the author
+            // controls the order of entries from the admin.
+            if ($request->order_asc_by) {
+                $filters = array_merge($filters, [
+                    [
+                        'column' => $request->order_asc_by,
+                        "type" => "sort",
+                        'value' => "asc",
+                    ]
+                ]);
+            }
             $data = $this->repository->getData($this->perPage, $this->page, $request->search, $this->searchField, $allData, $filters);
             return $data;
         } catch (\Throwable $th) {

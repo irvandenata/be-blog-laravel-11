@@ -23,6 +23,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { useLocale } from "@/i18n/useLocale";
 
 const LandingPage = () => {
     const dispatch = useDispatch();
@@ -34,6 +35,7 @@ const LandingPage = () => {
     const projects = useSelector((state: any) => state.landing.projects);
     const [isMobile, _] = useState(window.innerWidth < 768);
     const navigate = useNavigate();
+    const { t, locale, localePath } = useLocale();
 
     const homeRef = useRef(null);
     const workExperienceRef = useRef(null);
@@ -105,36 +107,6 @@ const LandingPage = () => {
                     }, 1000);
                 });
 
-                fetchDataTechStack().then((res) => {
-                    const response = res.data;
-                    const fe: any = [];
-                    const be: any = [];
-                    const ot: any = [];
-                    response.forEach((item: any) => {
-                        if (item.subtitle === "frontend") {
-                            fe.push(item);
-                        } else if (item.subtitle === "backend") {
-                            be.push(item);
-                        } else if (item.subtitle === "others") {
-                            ot.push(item);
-                        }
-                    });
-                    dispatch(
-                        setTechStack({ frontend: fe, backend: be, others: ot })
-                    );
-                });
-
-                fetchDataWorkExperience().then((res) => {
-                    const response = res.data;
-                    dispatch(
-                        setWorkExperience({ data: response, is_load: true })
-                    );
-                });
-
-                fetchDataProjects().then((res) => {
-                    const response = res.data;
-                    dispatch(setProjects({ data: response, is_load: true }));
-                });
             } else {
                 setIsLoad(true);
                 setTimeout(() => {
@@ -148,6 +120,38 @@ const LandingPage = () => {
 
         loadPage();
     }, [url]);
+
+    /**
+     * Translatable content is fetched separately from the one-time header/loader
+     * bootstrap above: that path is guarded by header.is_load and so never runs
+     * twice, which would leave a language switch showing the previous locale.
+     */
+    useEffect(() => {
+        fetchDataTechStack(locale).then((res) => {
+            const response = res.data;
+            const fe: any = [];
+            const be: any = [];
+            const ot: any = [];
+            response.forEach((item: any) => {
+                if (item.subtitle === "frontend") {
+                    fe.push(item);
+                } else if (item.subtitle === "backend") {
+                    be.push(item);
+                } else if (item.subtitle === "others") {
+                    ot.push(item);
+                }
+            });
+            dispatch(setTechStack({ frontend: fe, backend: be, others: ot }));
+        });
+
+        fetchDataWorkExperience(locale).then((res) => {
+            dispatch(setWorkExperience({ data: res.data, is_load: true }));
+        });
+
+        fetchDataProjects(locale).then((res) => {
+            dispatch(setProjects({ data: res.data, is_load: true }));
+        });
+    }, [locale, dispatch]);
 
     useEffect(() => {
         setTimeout(() => {
@@ -236,9 +240,9 @@ const LandingPage = () => {
     ) : (
         <>
             <SEOHead
-                title="Home"
+                title={t("landing.seoTitle")}
                 description={seoDescription}
-                url="/"
+                url={localePath("/")}
                 type="website"
                 structuredData={landingStructuredData}
             />
@@ -325,7 +329,7 @@ const LandingPage = () => {
                     outAnimate="animate-go-away delay-0 "
                     bottom={900}
                 >
-                    <div>Work Experience</div>
+                    <div>{t("landing.workExperience")}</div>
                 </AnimateSection>
                 <div className="w-full" id="work-experience-container">
                     <div className="flex lg:md:px-10  rounded-2xl mx-auto lg:w-3/4 md:w-3/4 w-full">
@@ -348,7 +352,7 @@ const LandingPage = () => {
                     outAnimate="animate-go-away"
                     bottom={600}
                 >
-                    <div>Tech Stack</div>
+                    <div>{t("landing.techStack")}</div>
                 </AnimateSection>
                 <div className="w-full">
                     <div className="grid lg:grid-cols-3 md:grid-cols-3 grid-cols-1">
@@ -361,7 +365,7 @@ const LandingPage = () => {
                                 outAnimate="animate-go-away"
                                 bottom={600}
                             >
-                                <h2 className="text-lg dark:text-white text-dark">Frontend</h2>
+                                <h2 className="text-lg dark:text-white text-dark">{t("landing.frontend")}</h2>
                             </AnimateSection>
                             <div className="grid lg:grid-cols-4 md:grid-cols-4 grid-cols-3 gap-5 md:gap-3 mt-4 mb-14">
                                 {techStack.frontend.map(
@@ -431,7 +435,7 @@ const LandingPage = () => {
                                 outAnimate="animate-go-away"
                                 bottom={600}
                             >
-                                <h2 className="text-lg dark:text-white text-dark">Backend</h2>
+                                <h2 className="text-lg dark:text-white text-dark">{t("landing.backend")}</h2>
                             </AnimateSection>
                             <div className="grid lg:grid-cols-4 md:grid-cols-4 grid-cols-3 gap-5 md:gap-3 mt-4 mb-14">
                                 {techStack.backend.map(
@@ -501,7 +505,7 @@ const LandingPage = () => {
                                 outAnimate="animate-go-away"
                                 bottom={600}
                             >
-                                <h2 className="text-lg dark:text-white text-dark">Others</h2>
+                                <h2 className="text-lg dark:text-white text-dark">{t("landing.others")}</h2>
                             </AnimateSection>
                             <div className="grid lg:grid-cols-4 md:grid-cols-4 grid-cols-3 gap-5 md:gap-3 mt-4 mb-14">
                                 {techStack.others.map(
@@ -579,7 +583,7 @@ const LandingPage = () => {
                     outAnimate="animate-go-away"
                     bottom={0}
                 >
-                    Projects
+                    {t("landing.projects")}
                 </AnimateSection>
                 <div className="w-full" id="projects-container">
                     <div className="grid grid-cols-1  lg:grid-cols-3 md:grid-cols-3 gap-4 ">
@@ -628,14 +632,14 @@ const LandingPage = () => {
                                                 category: 1,
                                             })
                                         );
-                                        navigate("/blogs");
+                                        navigate(localePath("/blogs"));
                                     }}
                                     borderRadius="1.75rem"
                                     className="bg-white px-10 py-2
                                             dark:hover:bg-primary
                                         dark:bg-slate-900 text-black font-extrabold dark:text-white border-neutral-200 dark:border-slate-800"
                                 >
-                                    More Projects
+                                    {t("landing.moreProjects")}
                                 </Button>
                             </AnimateSection>
                         </div>

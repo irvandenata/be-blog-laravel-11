@@ -1,8 +1,10 @@
 import { setActiveMenu } from "@/redux/slices/landingSlice";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import useColorMode from "@/hooks/useColorMode";
+import { useLocale } from "@/i18n/useLocale";
+import { stripLocale } from "@/i18n/useLocale";
 
 export default function StickyNavbar() {
   const [openNav, setOpenNav] = React.useState(false);
@@ -13,6 +15,11 @@ export default function StickyNavbar() {
   const [colorMode, setColorMode] = useColorMode();
   const isDark = colorMode === "dark";
   const dispatch = useDispatch();
+  const { t, locale, localePath, switchLocale } = useLocale();
+  const { pathname } = useLocation();
+  // Section links only scroll on the landing page; from any other page they
+  // have to navigate home first.
+  const isLanding = stripLocale(pathname) === "/";
   React.useEffect(() => {
     window.addEventListener(
       "resize",
@@ -28,134 +35,107 @@ export default function StickyNavbar() {
   // function for direct to the section
   const handleDirectToSection = (id: string) => {
     openNav ? setOpenNav(false) : null;
-    const element = document.getElementById(id);
-    element?.scrollIntoView({
-      behavior: "smooth",
-    });
+    // Off the landing page there is no section to scroll to; let the Link
+    // navigate and the landing page handle the hash on arrival.
+    if (isLanding) {
+      const element = document.getElementById(id);
+      element?.scrollIntoView({
+        behavior: "smooth",
+      });
+    }
     dispatch(setActiveMenu(id));
   };
 
+  // Section links live on the landing page; About and Blogs are real routes.
+  const sections = [
+    { id: "home", label: t("nav.home") },
+    { id: "work-experience", label: t("nav.workExperience") },
+    { id: "tech-stack", label: t("nav.techStack") },
+    { id: "projects", label: t("nav.projects") },
+    { id: "get-in-touch", label: t("nav.getInTouch") },
+  ];
+
+  const linkClass = (isActive: boolean) =>
+    "flex items-center px-2 py-1 rounded-lg hover:bg-primary hover:text-white " +
+    (isActive ? "bg-primary text-white" : "");
+
   const navList = (
     <ul className="mt-2 mb-4 flex flex-col gap-2 lg:mb-0 lg:mt-0 lg:flex-row lg:items-center lg:gap-2">
+      {sections.map((section) => (
+        <li key={section.id} className=" dark:text-white font-normal">
+          <Link
+            to={localePath(`/#${section.id}`)}
+            onClick={() => handleDirectToSection(section.id)}
+            className={linkClass(activeMenu === section.id)}
+          >
+            {section.label}
+          </Link>
+        </li>
+      ))}
       <li className=" dark:text-white font-normal">
         <Link
-          to="/#home"
-          onClick={() => handleDirectToSection("home")}
-          className={
-            "flex items-center px-2 py-1 rounded-lg hover:bg-primary hover:text-white " +
-            (activeMenu === "home" ? "bg-primary text-white" : "")
-          }
+          to={localePath("/about")}
+          onClick={() => {
+            openNav ? setOpenNav(false) : null;
+            dispatch(setActiveMenu("about"));
+          }}
+          className={linkClass(activeMenu === "about")}
         >
-          Home
+          {t("nav.about")}
         </Link>
       </li>
       <li className=" dark:text-white font-normal">
         <Link
-          to="/#work-experience"
-          onClick={() => handleDirectToSection("work-experience")}
-          className={
-            "flex items-center px-2 py-1 rounded-lg hover:bg-primary hover:text-white " +
-            (activeMenu === "work-experience" ? "bg-primary text-white" : "")
-          }
-        >
-          Work Experience
-        </Link>
-      </li>
-      <li className=" dark:text-white font-normal">
-        <Link
-          to="/#tech-stack"
-          onClick={() => handleDirectToSection("tech-stack")}
-          className={
-            "flex items-center px-2 py-1 rounded-lg hover:bg-primary hover:text-white " +
-            (activeMenu === "tech-stack" ? "bg-primary text-white" : "")
-          }
-        >
-          Tech Stack
-        </Link>
-      </li>
-      <li className=" dark:text-white font-normal">
-        <Link
-          to="/#projects"
-          onClick={() => handleDirectToSection("projects")}
-          className={
-            "flex items-center px-2 py-1 rounded-lg hover:bg-primary hover:text-white " +
-            (activeMenu === "projects" ? "bg-primary text-white" : "")
-          }
-        >
-          Projects
-        </Link>
-      </li>
-      <li className=" dark:text-white font-normal">
-        <Link
-          to="/#get-in-touch"
-          onClick={() => handleDirectToSection("get-in-touch")}
-          className={
-            "flex items-center px-2 py-1 rounded-lg hover:bg-primary hover:text-white " +
-            (activeMenu === "get-in-touch" ? "bg-primary text-white" : "")
-          }
-        >
-          Get in touch
-        </Link>
-      </li>
-      <li className=" dark:text-white font-normal">
-        <Link
-          to="/blogs"
+          to={localePath("/blogs")}
           onClick={() => {
             openNav ? setOpenNav(false) : null;
             dispatch(setActiveMenu("blogs"));
           }}
-          className={
-            "flex items-center px-2 py-1 rounded-lg hover:bg-primary hover:text-white " +
-            (activeMenu === "blogs" ? "bg-primary text-white" : "")
-          }
+          className={linkClass(activeMenu === "blogs")}
         >
-          Blogs
+          {t("nav.blogs")}
         </Link>
       </li>
     </ul>
+  );
+
+  // Two locales, so one button toggles rather than opening a menu. The label
+  // shows the language currently active; clicking switches to the other one.
+  const languageToggle = (
+    <button
+      type="button"
+      onClick={() => switchLocale(locale === "en" ? "id" : "en")}
+      aria-label={t("nav.switchLanguage")}
+      title={t("nav.switchLanguage")}
+      className="text-dark dark:text-white hover:bg-slate-200 dark:outline dark:outline-slate-500
+                 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-gray-200
+                 rounded-lg text-sm font-semibold px-2.5 py-2 uppercase"
+    >
+      {locale === "en" ? "EN" : "ID"}
+    </button>
   );
 
   return (
     <nav className="absolute top-0 z-10 w-full  max-w-full dark:border-dark dark:bg-dark bg-white  dark:text-white rounded-none px-4 py-2 lg:px-8 lg:py-4">
       <div className="flex items-center dark:text-white justify-between text-blue-gray-900">
         <Link
-          to="/"
-          className="mr-4 w-auto flex cursor-pointer py-1.5 font-medium"
+          to={localePath("/")}
+          onClick={() => dispatch(setActiveMenu("home"))}
+          className="mr-4 w-auto flex items-center cursor-pointer py-1.5 font-medium"
         >
-          <div className="w-6 h-6">
-            <svg
-              fill="#81263A"
-              version="1.1"
-              id="Capa_1"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 94.504 94.504"
-              stroke="#81263A"
-            >
-              <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
-              <g
-                id="SVGRepo_tracerCarrier"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              ></g>
-              <g id="SVGRepo_iconCarrier">
-                {" "}
-                <g>
-                  {" "}
-                  <g>
-                    {" "}
-                    <path d="M93.918,45.833L69.799,21.714c-0.75-0.75-2.077-0.75-2.827,0l-5.229,5.229c-0.781,0.781-0.781,2.047,0,2.828 l17.477,17.475L61.744,64.724c-0.781,0.781-0.781,2.047,0,2.828l5.229,5.229c0.375,0.375,0.884,0.587,1.414,0.587 c0.529,0,1.039-0.212,1.414-0.587l24.117-24.118C94.699,47.881,94.699,46.614,93.918,45.833z"></path>{" "}
-                    <path d="M32.759,64.724L15.285,47.248l17.477-17.475c0.375-0.375,0.586-0.883,0.586-1.414c0-0.53-0.21-1.039-0.586-1.414 l-5.229-5.229c-0.375-0.375-0.884-0.586-1.414-0.586c-0.53,0-1.039,0.211-1.414,0.586L0.585,45.833 c-0.781,0.781-0.781,2.047,0,2.829L24.704,72.78c0.375,0.375,0.884,0.587,1.414,0.587c0.53,0,1.039-0.212,1.414-0.587l5.229-5.229 C33.542,66.771,33.542,65.505,32.759,64.724z"></path>{" "}
-                    <path d="M60.967,13.6c-0.254-0.466-0.682-0.812-1.19-0.962l-4.239-1.251c-1.058-0.314-2.172,0.293-2.484,1.352L33.375,79.382 c-0.15,0.509-0.092,1.056,0.161,1.521c0.253,0.467,0.682,0.812,1.19,0.963l4.239,1.251c0.189,0.056,0.38,0.083,0.567,0.083 c0.863,0,1.66-0.564,1.917-1.435l19.679-66.644C61.278,14.612,61.221,14.065,60.967,13.6z"></path>{" "}
-                  </g>{" "}
-                </g>{" "}
-              </g>
-            </svg>
-          </div>
+          <img
+            src="/logo.png"
+            alt="IVD"
+            width={24}
+            height={24}
+            className="w-6 h-6 dark:invert"
+          />
           &nbsp; IVD
         </Link>
 
         <div className="flex items-center gap-4">
           <div className="mr-4 hidden lg:block">{navList}</div>
+          {languageToggle}
           <div
             id="theme-toggle"
             onClick={handleClickTheme}

@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/UI/moving-border";
+import { useLocale } from "@/i18n/useLocale";
 
 const ArticleDetailPage = () => {
   const [article, setArticle] = useState<IArticle | null>(null);
@@ -16,10 +17,11 @@ const ArticleDetailPage = () => {
   const param = useParams<{ slug: string }>();
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { t, locale, localePath } = useLocale();
 
   useEffect(() => {
     if (!param.slug) {
-      navigate("/not-found");
+      navigate(localePath("/not-found"));
       return;
     }
 
@@ -35,7 +37,7 @@ const ArticleDetailPage = () => {
       count = false;
     }
     dispatch(setActiveMenu("blogs"));
-    getDataBySlug(param.slug ?? "", count)
+    getDataBySlug(param.slug ?? "", count, locale)
       .then((res) => {
         if (!isCurrent) return;
         setArticle(res.data);
@@ -47,12 +49,12 @@ const ArticleDetailPage = () => {
       })
       .catch((_) => {
         if (!isCurrent) return;
-        navigate("/not-found");
+        navigate(localePath("/not-found"));
       });
     return () => {
       isCurrent = false;
     };
-  }, [param.slug, navigate, dispatch]);
+  }, [param.slug, navigate, dispatch, locale]);
 
   useEffect(() => {
     if (!article) return;
@@ -61,6 +63,7 @@ const ArticleDetailPage = () => {
       page: 1,
       limit: 3,
       search_category_id: article.category?.id,
+      locale,
     })
       .then((res) => {
         if (!isCurrent) return;
@@ -77,7 +80,7 @@ const ArticleDetailPage = () => {
     return () => {
       isCurrent = false;
     };
-  }, [article]);
+  }, [article, locale]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -145,7 +148,7 @@ const ArticleDetailPage = () => {
         description={getSeoDescription(article)}
         keywords={getSeoKeywords(article)}
         image={article.image_url}
-        url={`/blogs/${article.slug}`}
+        url={localePath(`/blogs/${article.slug}`)}
         type="article"
         publishedTime={article.created_at}
         modifiedTime={article.updated_at}
@@ -194,7 +197,7 @@ const ArticleDetailPage = () => {
               </svg>
               &nbsp;
               <p className="text-md my-auto text-white  font-bold rounded-xl">
-                {article?.views} Views
+                {article?.views} {t("blog.views")}
               </p>
             </div>
           </div>
@@ -217,6 +220,14 @@ const ArticleDetailPage = () => {
           )}
         </div>
         <div className="w-full lg:px-60 ">
+          {article.is_translated === false && (
+            <p
+              role="status"
+              className="mb-6 rounded-lg border-2 border-yellow bg-slate-50 px-4 py-3 text-sm dark:bg-gray-dark"
+            >
+              {t("blog.translationNotice")}
+            </p>
+          )}
           <div
             className="prose-revert"
             style={{
@@ -233,7 +244,7 @@ const ArticleDetailPage = () => {
           className="w-full lg:px-60 relative grid place-content-center grid-cols-1 z-10 "
         >
           <div className="text-2xl py-10 text-center font-bold dark:text-white text-dark-custom-200">
-            Related Articles
+            {t("blog.relatedArticles")}
           </div>
           <div className="w-full" id="projects-container">
             <div className="grid grid-cols-1 gap-4 ">
@@ -248,7 +259,7 @@ const ArticleDetailPage = () => {
                     <div
                       className="w-full hover:border-primary hover:scale-105 hover:cursor-pointer border-2 border-bodydark2 dark:border-slate-800 rounded-xl relative overflow-hidden"
                       onClick={() => {
-                        navigate(`/blogs/${item.slug}`);
+                        navigate(localePath(`/blogs/${item.slug}`));
                       }}
                     >
                       <div className="place-items-start flex">

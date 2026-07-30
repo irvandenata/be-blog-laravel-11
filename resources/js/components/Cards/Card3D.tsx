@@ -2,6 +2,7 @@
 
 import { Link } from "react-router-dom";
 import { CardBody, CardContainer, CardItem } from "../UI/3d-card";
+import { useLocale } from "@/i18n/useLocale";
 
 export const DEFAULT_THUMBNAIL = "/og-default.svg";
 
@@ -12,6 +13,9 @@ export const Card3D: React.FC<{
   image_url: string;
   slug: string;
 }> = ({ title, content, category, image_url, slug }) => {
+  // Keeps the reader in the language they are browsing in.
+  const { t, localePath } = useLocale();
+
   return (
     <CardContainer className="inter-var w-full">
       <CardBody className="bg-gray-50 relative group/card  dark:hover :shadow-2xl dark:hover:shadow-emerald-500/[0.1] bg-slate-100 dark:bg-dark dark:border-gray-dark dark:border-2 border-bodydark2 w-full  h-auto rounded-xl p-6 border-2  ">
@@ -59,13 +63,13 @@ export const Card3D: React.FC<{
         )}
 
         <div className="flex justify-between items-center mt-8">
-          <Link to={`/blogs/${slug}`}>
+          <Link to={localePath(`/blogs/${slug}`)}>
             <CardItem
               translateZ={20}
               as="button"
               className="px-4 py-2 rounded-xl bg-black dark:bg-white  hover:bg-primary dark:hover:bg-primary dark:hover:text-white dark:text-black text-white text-xs font-bold"
             >
-              Read More <span className="ml-2">→</span>
+              {t("common.readMore")} <span className="ml-2">→</span>
             </CardItem>
           </Link>
         </div>

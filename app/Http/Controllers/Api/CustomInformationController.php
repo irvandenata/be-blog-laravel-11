@@ -19,8 +19,8 @@ class CustomInformationController extends Controller
     use BaseCrudTrait;
     public function __construct()
     {
-        $storeFields = ['title', 'information_type_id', 'subtitle', 'description', 'image', 'icon', 'link', 'start_date', 'end_date'];
-        $updateFields = ['title', 'information_type_id', 'subtitle', 'description', 'image', 'icon', 'link', 'start_date', 'end_date'];
+        $storeFields = ['title', 'title_en', 'information_type_id', 'subtitle', 'description', 'description_en', 'image', 'icon', 'link', 'start_date', 'end_date'];
+        $updateFields = ['title', 'title_en', 'information_type_id', 'subtitle', 'description', 'description_en', 'image', 'icon', 'link', 'start_date', 'end_date'];
         $fileFields = ['image'];
         $this->with = ['type'];
         $repository = new BaseEloquentRepository(new CustomInformation, $this->with);

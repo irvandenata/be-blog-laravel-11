@@ -6,9 +6,11 @@ import { setActiveMenu } from "@/redux/slices/landingSlice";
 import { fetchDataCategories, fetchDataNoAuth } from "@/services/article";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useLocale } from "@/i18n/useLocale";
 
 const SearchArticlePage = () => {
     const dispatch = useDispatch();
+    const { t, locale, localePath } = useLocale();
     const [isMobile, _] = useState(false);
 
     const [articles, setArticles] = useState<IArticle[]>([]);
@@ -27,6 +29,7 @@ const SearchArticlePage = () => {
         sort: "asc",
         search: "",
         search_category_id: category !== 0 ? category : "",
+        locale,
     });
 
     const loadOtherData = () => {
@@ -65,16 +68,17 @@ const SearchArticlePage = () => {
             page: 1,
             search: search,
             search_category_id: category !== 0 ? category : "",
+            locale,
         });
-    }, [search, category]);
+    }, [search, category, locale]);
 
     const blogsStructuredData = {
         "@context": "https://schema.org",
         "@type": "CollectionPage",
-        name: "Articles & Blog | ivd.my.id",
-        description:
-            "Browse articles and blog posts about software engineering, technology, and more.",
-        url: "https://ivd.my.id/blogs",
+        name: `${t("blog.seoTitle")} | ivd.my.id`,
+        description: t("blog.seoDescription"),
+        url: `https://ivd.my.id${localePath("/blogs")}`,
+        inLanguage: locale,
         author: {
             "@type": "Person",
             name: "Denata",
@@ -85,10 +89,10 @@ const SearchArticlePage = () => {
     return (
         <div id="article-content">
             <SEOHead
-                title="Articles & Blog"
-                description="Browse articles and blog posts about software engineering, technology, and more. Dedicated to thoughts and ideas that stopped by in my head."
+                title={t("blog.seoTitle")}
+                description={t("blog.seoDescription")}
                 keywords="blog, articles, software engineering, technology, programming"
-                url="/blogs"
+                url={localePath("/blogs")}
                 type="website"
                 structuredData={blogsStructuredData}
             />
@@ -97,13 +101,10 @@ const SearchArticlePage = () => {
                 className="flex flex-col items-center text-center text-dark dark:text-bodydark1  justify-center relative z-10 pt-40 pb-10"
             >
                 <p className="bg-primary dark:text-white text-white py-1 px-2 mb-4 rounded-lg">
-                    Read My Mind
+                    {t("blog.badge")}
                 </p>
-                <h1 className="text-4xl">Browse The Resources</h1>
-                <p>
-                    Dedication to the thoughts and ideas that have ever stopped
-                    by in my head
-                </p>
+                <h1 className="text-4xl">{t("blog.title")}</h1>
+                <p>{t("blog.subtitle")}</p>
                 {/* input for search with icon */}
                 <div className="flex w-full my-8">
                     <form
@@ -115,7 +116,7 @@ const SearchArticlePage = () => {
                         }}
                     >
                         <label className="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">
-                            Search
+                            {t("blog.searchLabel")}
                         </label>
                         <div className="relative z-10">
                             <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
@@ -143,13 +144,13 @@ const SearchArticlePage = () => {
                                 ref={searchInput}
                                 id="default-search"
                                 className="block w-full  p-4 ps-10 text-sm text-gray-900  border-gray-300 rounded-lg dark:bg-gray-dark bg-white focus:ring-primary focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary dark:focus:border-primary border-2"
-                                placeholder="Search everything ..."
+                                placeholder={t("blog.searchPlaceholder")}
                             />
                             <button
                                 type="submit"
                                 className="text-white absolute end-2.5 z-999 bottom-2.5 bg-background1 hover:bg-primary focus:ring-4 focus:outline-none focus:ring-primary font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-primary "
                             >
-                                Search
+                                {t("blog.searchButton")}
                             </button>
                         </div>
                         {/* filter category */}
@@ -164,7 +165,9 @@ const SearchArticlePage = () => {
                                     }
                                 }}
                             >
-                                <option value="0">All Category</option>
+                                <option value="0">
+                                    {t("blog.allCategory")}
+                                </option>
                                 {articleCategory.map(
                                     (item: any, index: number) => (
                                         <option
@@ -182,7 +185,9 @@ const SearchArticlePage = () => {
                 </div>
                 {search != "" && (
                     <div className="flex justify-center">
-                        <p className="font-medium">Searched for: {search}</p>
+                        <p className="font-medium">
+                            {t("blog.searchedFor")} {search}
+                        </p>
                     </div>
                 )}
             </div>
@@ -216,7 +221,7 @@ const SearchArticlePage = () => {
                         !isLoad && (
                             <div className="flex justify-center">
                                 <p className="text-lg font-bold">
-                                    No article found
+                                    {t("blog.notFound")}
                                 </p>
                             </div>
                         )}

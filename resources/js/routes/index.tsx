@@ -8,6 +8,7 @@ import { middlewareLoader } from "@/utils/middleware";
 import SearchArticlePage from "@/pages/Blog/SearchArticle";
 import ArticleDetailPage from "@/pages/Blog/ArticleDetail";
 import NotFoundPage from "@/pages/404";
+import AboutPage from "@/pages/About";
 
 /**
  * Admin screens are lazy so the WYSIWYG editor (draft-js and friends, several
@@ -31,6 +32,7 @@ const CustomInformationTypePage = lazy(
   () => import("../pages/Admin/CustomInformationType"),
 );
 const ContactMessagePage = lazy(() => import("@/pages/Admin/ContactMessage"));
+const AdminAboutPage = lazy(() => import("@/pages/Admin/About"));
 
 const PageFallback = () => (
   <div className="grid min-h-[50vh] place-content-center text-sm text-slate-500 dark:text-slate-400">
@@ -41,45 +43,48 @@ const PageFallback = () => (
 const deferred = (node: ReactNode) => (
   <Suspense fallback={<PageFallback />}>{node}</Suspense>
 );
+/**
+ * The public tree is mounted twice: once at "/" (Indonesian, the default) and
+ * once at "/en" (English). Built from one factory so a route can never exist in
+ * one language but not the other. Locale itself is read from the URL by
+ * useLocale, so the elements are identical between mounts.
+ */
+const publicRoutes = () => [
+  { index: true, element: <LandingPage /> },
+  { path: "not-found", element: <NotFoundPage /> },
+  { path: "about", element: <AboutPage /> },
+  {
+    path: "login",
+    element: deferred(<LoginPage />),
+    loader: ifLogin,
+  },
+  {
+    path: "logout",
+    loader: logout,
+    element: <></>,
+  },
+  {
+    path: "blogs",
+    children: [
+      { path: "", element: <SearchArticlePage /> },
+      { path: ":slug", element: <ArticleDetailPage /> },
+    ],
+  },
+];
+
 export default createBrowserRouter(
   [
     {
       path: "/",
       element: <MainLayout />,
       errorElement: <ErrorPage />,
-      children: [
-        {
-          path: "/",
-          element: <LandingPage />,
-        },
-        {
-          path: "/not-found",
-          element: <NotFoundPage />,
-        },
-        {
-          path: "login",
-          element: deferred(<LoginPage />),
-          loader: ifLogin,
-        },
-        {
-          path: "logout",
-          loader: logout,
-          element: <></>,
-        },
-        {
-          path: "blogs",
-          children: [
-            {
-              path: "",
-              element: <SearchArticlePage />,
-            },
-            {
-              path: ":slug",
-              element: <ArticleDetailPage />,
-            },
-          ],
-        },
-      ],
+      children: publicRoutes(),
+    },
+    {
+      path: "/en",
+      element: <MainLayout />,
+      errorElement: <ErrorPage />,
+      children: publicRoutes(),
     },
     {
       path: "admin",
@@ -108,6 +113,11 @@ export default createBrowserRouter(
         {
           path: "contact-messages",
           element: deferred(<ContactMessagePage />),
+          loader: middlewareLoader,
+        },
+        {
+          path: "about",
+          element: deferred(<AdminAboutPage />),
           loader: middlewareLoader,
         },
         {

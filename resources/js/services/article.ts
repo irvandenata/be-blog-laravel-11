@@ -48,8 +48,8 @@ export async function fetchComments(slug:string): Promise<any> {
 }
 
 
-export async function getDataBySlug(slug:string,count:boolean): Promise<any> {
-    const url = `${API_ENDPOINT}/data/articles/${slug}`;
+export async function getDataBySlug(slug:string,count:boolean,locale: string = "id"): Promise<any> {
+    const url = `${API_ENDPOINT}/data/articles/${slug}?locale=${locale}`;
     let headers ={};
 
     if(count){
