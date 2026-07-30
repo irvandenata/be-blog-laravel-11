@@ -19,10 +19,10 @@ return new class extends Migration
         $baseUrl = rtrim(env('APP_URL', 'https://ivd.my.id'), '/');
 
         $defaults = [
-            'site_name' => 'ivd.my.id',
+            'site_name' => 'Irvan Denata',
             'site_url' => $baseUrl,
             'default_title' => 'Irvan Denata — Fullstack Engineer',
-            'title_template' => '%s | ivd.my.id',
+            'title_template' => '%s | Irvan Denata',
             'default_description' => 'Personal blog and portfolio — articles about software engineering, technology, and the ideas that stopped by in my head.',
             'default_keywords' => 'software engineering, web development, laravel, react, programming, blog',
             'default_og_image' => '',

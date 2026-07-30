@@ -8,17 +8,17 @@ import { Button } from "@/components/UI/moving-border";
 import { SEOHead } from "@/hooks/useSEO";
 import { setCategoryFilter } from "@/redux/slices/articleSlice";
 import {
-    setActiveMenu,
-    setHeader,
-    setProjects,
-    setTechStack,
-    setWorkExperience,
+  setActiveMenu,
+  setHeader,
+  setProjects,
+  setTechStack,
+  setWorkExperience,
 } from "@/redux/slices/landingSlice";
 import {
-    fetchDataProjects,
-    fetchDataSetting,
-    fetchDataTechStack,
-    fetchDataWorkExperience,
+  fetchDataProjects,
+  fetchDataSetting,
+  fetchDataTechStack,
+  fetchDataWorkExperience,
 } from "@/services/landing";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -26,635 +26,606 @@ import { useNavigate } from "react-router-dom";
 import { useLocale } from "@/i18n/useLocale";
 
 const LandingPage = () => {
-    const dispatch = useDispatch();
-    const [url, setUrl] = useState("");
-    const [isLoad, setIsLoad] = useState(false);
-    const header = useSelector((state: any) => state.landing.header);
-    const loader = useRef<HTMLDivElement | null>(null);
-    const techStack = useSelector((state: any) => state.landing.techStack);
-    const projects = useSelector((state: any) => state.landing.projects);
-    const [isMobile, _] = useState(window.innerWidth < 768);
-    const navigate = useNavigate();
-    const { t, locale, localePath } = useLocale();
+  const dispatch = useDispatch();
+  const [url, setUrl] = useState("");
+  const [isLoad, setIsLoad] = useState(false);
+  const header = useSelector((state: any) => state.landing.header);
+  const loader = useRef<HTMLDivElement | null>(null);
+  const techStack = useSelector((state: any) => state.landing.techStack);
+  const projects = useSelector((state: any) => state.landing.projects);
+  const [isMobile, _] = useState(window.innerWidth < 768);
+  const navigate = useNavigate();
+  const { t, locale, localePath } = useLocale();
 
-    const homeRef = useRef(null);
-    const workExperienceRef = useRef(null);
-    const techStackRef = useRef(null);
-    const projectRef = useRef(null);
-    const getInTouchRef = useRef(null);
+  const homeRef = useRef(null);
+  const workExperienceRef = useRef(null);
+  const techStackRef = useRef(null);
+  const projectRef = useRef(null);
+  const getInTouchRef = useRef(null);
 
-    useEffect(() => {
-        if (isLoad) {
-            const observer = new IntersectionObserver(
-                (entries) => {
-                    entries.forEach((entry) => {
-                        if (entry.isIntersecting) {
-                            dispatch(setActiveMenu(entry.target.id));
-                        }
-                    });
-                },
-                { threshold: 0.7 } // Aktif jika 70% dari section terlihat
-            );
+  useEffect(() => {
+    if (isLoad) {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              dispatch(setActiveMenu(entry.target.id));
+            }
+          });
+        },
+        { threshold: 0.7 }, // Aktif jika 70% dari section terlihat
+      );
 
-            observer.observe(homeRef.current!);
-            observer.observe(workExperienceRef.current!);
-            observer.observe(techStackRef.current!);
-            observer.observe(projectRef.current!);
-            observer.observe(getInTouchRef.current!);
+      observer.observe(homeRef.current!);
+      observer.observe(workExperienceRef.current!);
+      observer.observe(techStackRef.current!);
+      observer.observe(projectRef.current!);
+      observer.observe(getInTouchRef.current!);
+    }
+  }, [isLoad]);
+
+  const [showHeader, setShowHeader] = useState(false);
+  const workExperience = useSelector(
+    (state: any) => state.landing.workExperience,
+  );
+  const handleDirectToSection = (id: string) => {
+    const element = document.getElementById(id);
+    element?.scrollIntoView({
+      behavior: "smooth",
+    });
+  };
+
+  useState(() => {
+    const url = window.location.href;
+    const urlSplit = url.split("#");
+
+    if (urlSplit.length > 1) {
+      const id = urlSplit[1];
+      setUrl(id);
+    }
+  });
+
+  useEffect(() => {
+    const loadPage = async () => {
+      if (!header.is_load) {
+        if (url === "") {
+          dispatch(setActiveMenu("home"));
+        } else {
+          dispatch(setActiveMenu(url));
         }
-    }, [isLoad]);
+        await fetchDataSetting().then((res) => {
+          dispatch(setHeader(res.data.header));
+          // animate make loader fade out
+          loader.current?.classList.add("animate-fade-out");
+          loader.current?.addEventListener("animationend", () => {
+            loader.current?.classList.add("hidden");
+          });
 
-    const [showHeader, setShowHeader] = useState(false);
-    const workExperience = useSelector(
-        (state: any) => state.landing.workExperience
-    );
-    const handleDirectToSection = (id: string) => {
-        const element = document.getElementById(id);
-        element?.scrollIntoView({
-            behavior: "smooth",
+          setIsLoad(true);
+          setTimeout(() => {
+            handleDirectToSection(url);
+          }, 1000);
         });
+      } else {
+        setIsLoad(true);
+        setTimeout(() => {
+          handleDirectToSection(url);
+        }, 700);
+      }
+      if (url) {
+        handleDirectToSection(url);
+      }
     };
 
-    useState(() => {
-        const url = window.location.href;
-        const urlSplit = url.split("#");
+    loadPage();
+  }, [url]);
 
-        if (urlSplit.length > 1) {
-            const id = urlSplit[1];
-            setUrl(id);
+  /**
+   * Translatable content is fetched separately from the one-time header/loader
+   * bootstrap above: that path is guarded by header.is_load and so never runs
+   * twice, which would leave a language switch showing the previous locale.
+   */
+  useEffect(() => {
+    fetchDataTechStack(locale).then((res) => {
+      const response = res.data;
+      const fe: any = [];
+      const be: any = [];
+      const ot: any = [];
+      response.forEach((item: any) => {
+        if (item.subtitle === "frontend") {
+          fe.push(item);
+        } else if (item.subtitle === "backend") {
+          be.push(item);
+        } else if (item.subtitle === "others") {
+          ot.push(item);
         }
+      });
+      dispatch(setTechStack({ frontend: fe, backend: be, others: ot }));
     });
 
-    useEffect(() => {
-        const loadPage = async () => {
-            if (!header.is_load) {
-                if (url === "") {
-                    dispatch(setActiveMenu("home"));
-                } else {
-                    dispatch(setActiveMenu(url));
-                }
-                await fetchDataSetting().then((res) => {
-                    dispatch(setHeader(res.data.header));
-                    // animate make loader fade out
-                    loader.current?.classList.add("animate-fade-out");
-                    loader.current?.addEventListener("animationend", () => {
-                        loader.current?.classList.add("hidden");
-                    });
+    fetchDataWorkExperience(locale).then((res) => {
+      dispatch(setWorkExperience({ data: res.data, is_load: true }));
+    });
 
-                    setIsLoad(true);
-                    setTimeout(() => {
-                        handleDirectToSection(url);
-                    }, 1000);
-                });
+    fetchDataProjects(locale).then((res) => {
+      dispatch(setProjects({ data: res.data, is_load: true }));
+    });
+  }, [locale, dispatch]);
 
-            } else {
-                setIsLoad(true);
-                setTimeout(() => {
-                    handleDirectToSection(url);
-                }, 700);
-            }
-            if (url) {
-                handleDirectToSection(url);
-            }
-        };
+  useEffect(() => {
+    setTimeout(() => {
+      setShowHeader(true);
+    }, 1000);
 
-        loadPage();
-    }, [url]);
-
-    /**
-     * Translatable content is fetched separately from the one-time header/loader
-     * bootstrap above: that path is guarded by header.is_load and so never runs
-     * twice, which would leave a language switch showing the previous locale.
-     */
-    useEffect(() => {
-        fetchDataTechStack(locale).then((res) => {
-            const response = res.data;
-            const fe: any = [];
-            const be: any = [];
-            const ot: any = [];
-            response.forEach((item: any) => {
-                if (item.subtitle === "frontend") {
-                    fe.push(item);
-                } else if (item.subtitle === "backend") {
-                    be.push(item);
-                } else if (item.subtitle === "others") {
-                    ot.push(item);
-                }
-            });
-            dispatch(setTechStack({ frontend: fe, backend: be, others: ot }));
-        });
-
-        fetchDataWorkExperience(locale).then((res) => {
-            dispatch(setWorkExperience({ data: res.data, is_load: true }));
-        });
-
-        fetchDataProjects(locale).then((res) => {
-            dispatch(setProjects({ data: res.data, is_load: true }));
-        });
-    }, [locale, dispatch]);
-
-    useEffect(() => {
-        setTimeout(() => {
-            setShowHeader(true);
-        }, 1000);
-
-        return () => {
-            setShowHeader(false);
-            // dispatch(setHeader({ data: {}, is_load: false }));
-        };
-    }, [isLoad]);
-
-    const onMouseEnter = (e: any) => {
-        const captions = document.getElementsByClassName("icon-caption");
-        for (let i = 0; i < captions.length; i++) {
-            captions[i].classList.add("invisible");
-        }
-
-        const caption = e.target.parentNode.nextSibling;
-        if (caption) {
-            caption.classList.remove("invisible");
-        }
+    return () => {
+      setShowHeader(false);
+      // dispatch(setHeader({ data: {}, is_load: false }));
     };
+  }, [isLoad]);
 
-    const onMouseLeave = (_: any) => {
-        // get all caption and hide
-        const captions = document.getElementsByClassName("icon-caption");
-        for (let i = 0; i < captions.length; i++) {
-            captions[i].classList.add("invisible");
-        }
-    };
+  const onMouseEnter = (e: any) => {
+    const captions = document.getElementsByClassName("icon-caption");
+    for (let i = 0; i < captions.length; i++) {
+      captions[i].classList.add("invisible");
+    }
 
-    const landingStructuredData = {
-        "@context": "https://schema.org",
-        "@graph": [
-            {
-                "@type": "WebSite",
-                "@id": "https://ivd.my.id/#website",
-                url: "https://ivd.my.id/",
-                name: "ivd.my.id",
-                description: header.data?.description
-                    ? header.data.description.replace(/<[^>]*>/g, "").trim()
-                    : "Personal blog and portfolio",
-                potentialAction: {
-                    "@type": "SearchAction",
-                    target: "https://ivd.my.id/blogs?search={search_term_string}",
-                    "query-input": "required name=search_term_string",
-                },
-            },
-            {
-                "@type": "Person",
-                "@id": "https://ivd.my.id/#person",
-                name: "Denata",
-                url: "https://ivd.my.id/",
-                image: header.data?.image,
-                sameAs: [],
-            },
-        ],
-    };
+    const caption = e.target.parentNode.nextSibling;
+    if (caption) {
+      caption.classList.remove("invisible");
+    }
+  };
 
-    const seoDescription = header.data?.description
-        ? header.data.description.replace(/<[^>]*>/g, "").slice(0, 160).trim()
-        : "Personal blog and portfolio — articles about software engineering, tech, and more.";
+  const onMouseLeave = (_: any) => {
+    // get all caption and hide
+    const captions = document.getElementsByClassName("icon-caption");
+    for (let i = 0; i < captions.length; i++) {
+      captions[i].classList.add("invisible");
+    }
+  };
 
-    return !isLoad ? (
-        <div className="h-screen w-full relative z-9999">
-            <div
-                id="spinner"
-                ref={loader}
-                className="w-full dark:text-white dark:bg-dark bg-white text-dark
+  const landingStructuredData = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "https://ivd.my.id/#website",
+        url: "https://ivd.my.id/",
+        name: "Irvan Denata",
+        description: header.data?.description
+          ? header.data.description.replace(/<[^>]*>/g, "").trim()
+          : "Personal blog and portfolio",
+        potentialAction: {
+          "@type": "SearchAction",
+          target: "https://ivd.my.id/blogs?search={search_term_string}",
+          "query-input": "required name=search_term_string",
+        },
+      },
+      {
+        "@type": "Person",
+        "@id": "https://ivd.my.id/#person",
+        name: "Denata",
+        url: "https://ivd.my.id/",
+        image: header.data?.image,
+        sameAs: [],
+      },
+    ],
+  };
+
+  const seoDescription = header.data?.description
+    ? header.data.description
+        .replace(/<[^>]*>/g, "")
+        .slice(0, 160)
+        .trim()
+    : "Personal blog and portfolio — articles about software engineering, tech, and more.";
+
+  return !isLoad ? (
+    <div className="h-screen w-full relative z-9999">
+      <div
+        id="spinner"
+        ref={loader}
+        className="w-full dark:text-white dark:bg-dark bg-white text-dark
 
                 h-screen z-99999 flex justify-center  items-center fixed top-0 left-0"
-            >
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="50"
-                    height="50"
-                    className="animate-spin"
-                    viewBox="0 0 512 512"
-                    fill="currentColor"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="50"
+          height="50"
+          className="animate-spin"
+          viewBox="0 0 512 512"
+          fill="currentColor"
+        >
+          <path d="M304 48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zm0 416a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM48 304a48 48 0 1 0 0-96 48 48 0 1 0 0 96zm464-48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM142.9 437A48 48 0 1 0 75 369.1 48 48 0 1 0 142.9 437zm0-294.2A48 48 0 1 0 75 75a48 48 0 1 0 67.9 67.9zM369.1 437A48 48 0 1 0 437 369.1 48 48 0 1 0 369.1 437z"></path>
+        </svg>
+      </div>
+    </div>
+  ) : (
+    <>
+      <SEOHead
+        title={t("landing.seoTitle")}
+        description={seoDescription}
+        url={localePath("/")}
+        type="website"
+        structuredData={landingStructuredData}
+      />
+      <div
+        id="home"
+        ref={homeRef}
+        className={`relative z-10 justify-center items-center lg:pt-0 md:pt-0 pt-12 lg:h-screen w-full`}
+      >
+        <div className="grid lg:grid-cols-2 md:grid-cols-2 gap-8 place-content-center grid-col-1  min-h-[100vh]">
+          <div className="lg:basis-1/2 md:basis-1/2 basis-1 lg:my-auto md:my-auto">
+            <div className="mx-auto text-center my-auto">
+              <AnimateSection
+                id="home-image"
+                parentId="home"
+                className={`lg:max-w-[50%] md:max-w-[50%]  max-w-[100%] relative z-10 mx-auto ${
+                  showHeader ? "" : "opacity-0"
+                }`}
+                bottom={600}
+                inAnimate="animate-jump-in delay-1200"
+                outAnimate="animate-go-away"
+              >
+                <BorderMoveCard
+                  borderRadius="10px"
+                  className="w-full border-2 "
                 >
-                    <path d="M304 48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zm0 416a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM48 304a48 48 0 1 0 0-96 48 48 0 1 0 0 96zm464-48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM142.9 437A48 48 0 1 0 75 369.1 48 48 0 1 0 142.9 437zm0-294.2A48 48 0 1 0 75 75a48 48 0 1 0 67.9 67.9zM369.1 437A48 48 0 1 0 437 369.1 48 48 0 1 0 369.1 437z"></path>
-                </svg>
+                  <img
+                    src={header.data.image}
+                    alt="profile"
+                    className="rounded-xl w-full max-w-[100%] mx-auto"
+                  />
+                </BorderMoveCard>
+              </AnimateSection>
             </div>
+          </div>
+
+          <div className="basis-1/2 my-auto  ">
+            <AnimateSection
+              id="home-title"
+              parentId="home"
+              className={` ${showHeader ? "" : "opacity-0 "}`}
+              bottom={600}
+              inAnimate="animate-fade-in delay-500"
+              outAnimate="animate-go-away "
+            >
+              <h1
+                className={`md:text-2xl text-left mx-auto text-xl lg:text-4xl font-bold dark:text-white text-dark-custom-200 relative z-20`}
+              >
+                <span
+                  className="text-justify"
+                  dangerouslySetInnerHTML={{
+                    __html: header.data.title,
+                  }}
+                ></span>
+              </h1>
+            </AnimateSection>
+            <AnimateSection
+              id="home-description"
+              parentId="home"
+              bottom={600}
+              className={`${showHeader ? "" : "opacity-0 "}`}
+              inAnimate="animate-fade-in delay-1000"
+              outAnimate="animate-go-away"
+            >
+              <div
+                className="lg:pr-32 mt-3 lg:text-left md:text-left text-justify"
+                dangerouslySetInnerHTML={{
+                  __html: header.data.description,
+                }}
+              ></div>
+            </AnimateSection>
+          </div>
         </div>
-    ) : (
-        <>
-            <SEOHead
-                title={t("landing.seoTitle")}
-                description={seoDescription}
-                url={localePath("/")}
-                type="website"
-                structuredData={landingStructuredData}
-            />
-            <div
-                id="home"
-                ref={homeRef}
-                className={`relative z-10 justify-center items-center lg:pt-0 md:pt-0 pt-12 lg:h-screen w-full`}
-            >
-                <div className="grid lg:grid-cols-2 md:grid-cols-2 gap-8 place-content-center grid-col-1  min-h-[100vh]">
-                    <div className="lg:basis-1/2 md:basis-1/2 basis-1 lg:my-auto md:my-auto">
-                        <div className="mx-auto text-center my-auto">
-                            <AnimateSection
-                                id="home-image"
-                                parentId="home"
-                                className={`lg:max-w-[50%] md:max-w-[50%]  max-w-[100%] relative z-10 mx-auto ${
-                                    showHeader ? "" : "opacity-0"
-                                }`}
-                                bottom={600}
-                                inAnimate="animate-jump-in delay-1200"
-                                outAnimate="animate-go-away"
-                            >
-                                <BorderMoveCard
-                                    borderRadius="10px"
-                                    className="w-full border-2 "
-                                >
-                                    <img
-                                        src={header.data.image}
-                                        alt="profile"
-                                        className="rounded-xl w-full max-w-[100%] mx-auto"
-                                    />
-                                </BorderMoveCard>
-                            </AnimateSection>
-                        </div>
-                    </div>
-
-                    <div className="basis-1/2 my-auto  ">
-                        <AnimateSection
-                            id="home-title"
-                            parentId="home"
-                            className={` ${showHeader ? "" : "opacity-0 "}`}
-                            bottom={600}
-                            inAnimate="animate-fade-in delay-500"
-                            outAnimate="animate-go-away "
+      </div>
+      <div
+        id="work-experience"
+        ref={workExperienceRef}
+        className="w-full z-10 lg:py-10 md:py-20 py-20 min-h-[80vh]"
+      >
+        <AnimateSection
+          className="text-3xl py-10 text-center font-bold dark:text-white text-dark-custom-200"
+          id="we-title"
+          parentId="work-experience"
+          inAnimate="animate-fade-on delay-0 "
+          outAnimate="animate-go-away delay-0 "
+          bottom={900}
+        >
+          <div>{t("landing.workExperience")}</div>
+        </AnimateSection>
+        <div className="w-full" id="work-experience-container">
+          <div className="flex lg:md:px-10  rounded-2xl mx-auto lg:w-3/4 md:w-3/4 w-full">
+            <WorkExperienceCard workExperience={workExperience.data} />
+          </div>
+        </div>
+      </div>
+      <div
+        id="tech-stack"
+        ref={techStackRef}
+        className="w-full relative z-10 grid grid-cols-1 place-content-center  min-h-[80vh]"
+      >
+        <AnimateSection
+          className="text-3xl py-10  text-center font-bold dark:text-white text-dark-custom-200"
+          id="ts-t"
+          parentId="tech-stack"
+          inAnimate="animate-fade-on"
+          outAnimate="animate-go-away"
+          bottom={600}
+        >
+          <div>{t("landing.techStack")}</div>
+        </AnimateSection>
+        <div className="w-full">
+          <div className="grid lg:grid-cols-3 md:grid-cols-3 grid-cols-1">
+            <div className=" lg:mx-6">
+              <AnimateSection
+                className="text-start"
+                id="fe-title"
+                parentId="tech-stack"
+                inAnimate="animate-fade-on"
+                outAnimate="animate-go-away"
+                bottom={600}
+              >
+                <h2 className="text-lg dark:text-white text-dark">
+                  {t("landing.frontend")}
+                </h2>
+              </AnimateSection>
+              <div className="grid lg:grid-cols-4 md:grid-cols-4 grid-cols-3 gap-5 md:gap-3 mt-4 mb-14">
+                {techStack.frontend.map((item: any, index: number) => (
+                  <div
+                    key={item.id}
+                    id={`icon-stack-` + item.id}
+                    className={`flex-row justify-center  relative `}
+                    style={{
+                      zIndex: 100 - index,
+                    }}
+                  >
+                    <AnimateSection
+                      className={`text-start `}
+                      id={`icon-stack-` + item.id}
+                      parentId="tech-stack"
+                      inAnimate={`animate-fade-in delay-${200 * index}`}
+                      outAnimate="animate-go-away"
+                      bottom={600}
+                    >
+                      <div className={`relative -z-${index + 1}`}>
+                        <div
+                          onMouseEnter={onMouseEnter}
+                          onMouseLeave={onMouseLeave}
+                          className="absolute bg-transparent  top-0 left-0 z-20 h-full w-full"
+                        ></div>
+                        <TechStack
+                          captionId={`caption-id-` + item.id}
+                          borderRadius="10px"
+                          className="icon-stack p-2 dark:bg-gray-dark bg-slate-50 rounded-lg hover:border-primary dark:hover:border-primary  hover:border-2 border-2 dark:border-dark border-bodydark2 cursor-pointer flex items-center justify-center"
                         >
-                            <h1
-                                className={`md:text-2xl text-left mx-auto text-xl lg:text-4xl font-bold dark:text-white text-dark-custom-200 relative z-20`}
-                            >
-                                <span
-                                    className="text-justify"
-                                    dangerouslySetInnerHTML={{
-                                        __html: header.data.title,
-                                    }}
-                                ></span>
-                            </h1>
-                        </AnimateSection>
-                        <AnimateSection
-                            id="home-description"
-                            parentId="home"
-                            bottom={600}
-                            className={`${showHeader ? "" : "opacity-0 "}`}
-                            inAnimate="animate-fade-in delay-1000"
-                            outAnimate="animate-go-away"
+                          <div
+                            className=""
+                            dangerouslySetInnerHTML={{
+                              __html: item.icon,
+                            }}
+                          />
+                        </TechStack>
+                      </div>
+                      <p
+                        id={`caption-id-` + item.id}
+                        className="icon-caption z-30 border-2 dark:border-2  border-bodydark2  text-sm absolute  dark:font-thin font-medium text-center mt-2 bg-slate-50 dark:bg-gray-dark p-1 invisible rounded"
+                      >
+                        {item.title}
+                      </p>
+                    </AnimateSection>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className=" lg:mx-6">
+              <AnimateSection
+                className="text-start"
+                id="be-title"
+                parentId="tech-stack"
+                inAnimate="animate-fade-on"
+                outAnimate="animate-go-away"
+                bottom={600}
+              >
+                <h2 className="text-lg dark:text-white text-dark">
+                  {t("landing.backend")}
+                </h2>
+              </AnimateSection>
+              <div className="grid lg:grid-cols-4 md:grid-cols-4 grid-cols-3 gap-5 md:gap-3 mt-4 mb-14">
+                {techStack.backend.map((item: any, index: number) => (
+                  <div
+                    key={item.id}
+                    id={`icon-stack-` + item.id}
+                    className={`flex-row justify-center  relative `}
+                    style={{
+                      zIndex: 100 - index,
+                    }}
+                  >
+                    <AnimateSection
+                      className={`text-start `}
+                      id={`icon-stack-` + item.id}
+                      parentId="tech-stack"
+                      inAnimate={`animate-fade-in delay-${200 * index}`}
+                      outAnimate="animate-go-away"
+                      bottom={600}
+                    >
+                      <div className={`relative -z-${index + 1}`}>
+                        <div
+                          onMouseEnter={onMouseEnter}
+                          onMouseLeave={onMouseLeave}
+                          className="absolute bg-transparent  top-0 left-0 z-999 h-full w-full"
+                        ></div>
+                        <TechStack
+                          captionId={`caption-id-` + item.id}
+                          borderRadius="10px"
+                          className="icon-stack p-2 dark:bg-gray-dark bg-slate-50 rounded-lg hover:border-primary dark:hover:border-primary  hover:border-2 border-2 dark:border-dark border-bodydark2 cursor-pointer flex items-center justify-center"
                         >
-                            <div
-                                className="lg:pr-32 mt-3 lg:text-left md:text-left text-justify"
-                                dangerouslySetInnerHTML={{
-                                    __html: header.data.description,
-                                }}
-                            ></div>
-                        </AnimateSection>
-                    </div>
-                </div>
+                          <div
+                            className=""
+                            dangerouslySetInnerHTML={{
+                              __html: item.icon,
+                            }}
+                          />
+                        </TechStack>
+                      </div>
+                      <p
+                        id={`caption-id-` + item.id}
+                        className="icon-caption z-999 border-2 dark:border-2  border-bodydark2  text-sm absolute invisible   dark:font-thin font-medium text-center mt-2 bg-slate-50 dark:bg-gray-dark p-1 rounded"
+                      >
+                        {item.title}
+                      </p>
+                    </AnimateSection>
+                  </div>
+                ))}
+              </div>
             </div>
-            <div
-                id="work-experience"
-                ref={workExperienceRef}
-                className="w-full z-10 lg:py-10 md:py-20 py-20 min-h-[80vh]"
-            >
-                <AnimateSection
-                    className="text-3xl py-10 text-center font-bold dark:text-white text-dark-custom-200"
-                    id="we-title"
-                    parentId="work-experience"
-                    inAnimate="animate-fade-on delay-0 "
-                    outAnimate="animate-go-away delay-0 "
-                    bottom={900}
-                >
-                    <div>{t("landing.workExperience")}</div>
-                </AnimateSection>
-                <div className="w-full" id="work-experience-container">
-                    <div className="flex lg:md:px-10  rounded-2xl mx-auto lg:w-3/4 md:w-3/4 w-full">
-                        <WorkExperienceCard
-                            workExperience={workExperience.data}
-                        />
-                    </div>
-                </div>
+            <div className=" lg:mx-6">
+              <AnimateSection
+                className="text-start"
+                id="ot-title"
+                parentId="tech-stack"
+                inAnimate="animate-fade-on"
+                outAnimate="animate-go-away"
+                bottom={600}
+              >
+                <h2 className="text-lg dark:text-white text-dark">
+                  {t("landing.others")}
+                </h2>
+              </AnimateSection>
+              <div className="grid lg:grid-cols-4 md:grid-cols-4 grid-cols-3 gap-5 md:gap-3 mt-4 mb-14">
+                {techStack.others.map((item: any, index: number) => (
+                  <div
+                    key={item.id}
+                    id={`icon-stack-` + item.id}
+                    className={`flex-row justify-center  relative `}
+                    style={{
+                      zIndex: 100 - index,
+                    }}
+                  >
+                    <AnimateSection
+                      className={`text-start `}
+                      id={`icon-stack-` + item.id}
+                      parentId="tech-stack"
+                      inAnimate={`animate-fade-in delay-${200 * index}`}
+                      outAnimate="animate-go-away"
+                      bottom={600}
+                    >
+                      <div className={`relative -z-${index + 1}`}>
+                        <div
+                          onMouseEnter={onMouseEnter}
+                          onMouseLeave={onMouseLeave}
+                          className="absolute bg-transparent  top-0 left-0 z-999 h-full w-full"
+                        ></div>
+                        <TechStack
+                          captionId={`caption-id-` + item.id}
+                          borderRadius="10px"
+                          className="icon-stack p-2 dark:bg-gray-dark rounded-lg bg-slate-50 hover:border-primary dark:hover:border-primary  hover:border-2 border-2 dark:border-dark border-bodydark2 cursor-pointer flex items-center justify-center"
+                        >
+                          <div
+                            className=""
+                            dangerouslySetInnerHTML={{
+                              __html: item.icon,
+                            }}
+                          />
+                        </TechStack>
+                      </div>
+                      <p
+                        id={`caption-id-` + item.id}
+                        className="icon-caption z-999 border-2 dark:border-2  border-bodydark2  text-sm absolute invisible   dark:font-thin font-medium text-center mt-2 bg-slate-50 dark:bg-gray-dark p-1 rounded"
+                      >
+                        {item.title}
+                      </p>
+                    </AnimateSection>
+                  </div>
+                ))}
+              </div>
             </div>
-            <div
-                id="tech-stack"
-                ref={techStackRef}
-                className="w-full relative z-10 grid grid-cols-1 place-content-center  min-h-[80vh]"
-            >
-                <AnimateSection
-                    className="text-3xl py-10  text-center font-bold dark:text-white text-dark-custom-200"
-                    id="ts-t"
-                    parentId="tech-stack"
-                    inAnimate="animate-fade-on"
-                    outAnimate="animate-go-away"
-                    bottom={600}
-                >
-                    <div>{t("landing.techStack")}</div>
-                </AnimateSection>
-                <div className="w-full">
-                    <div className="grid lg:grid-cols-3 md:grid-cols-3 grid-cols-1">
-                        <div className=" lg:mx-6">
-                            <AnimateSection
-                                className="text-start"
-                                id="fe-title"
-                                parentId="tech-stack"
-                                inAnimate="animate-fade-on"
-                                outAnimate="animate-go-away"
-                                bottom={600}
-                            >
-                                <h2 className="text-lg dark:text-white text-dark">{t("landing.frontend")}</h2>
-                            </AnimateSection>
-                            <div className="grid lg:grid-cols-4 md:grid-cols-4 grid-cols-3 gap-5 md:gap-3 mt-4 mb-14">
-                                {techStack.frontend.map(
-                                    (item: any, index: number) => (
-                                        <div
-                                            key={item.id}
-                                            id={`icon-stack-` + item.id}
-                                            className={`flex-row justify-center  relative `}
-                                            style={{
-                                                zIndex:100-index
-                                            }}
-                                        >
-                                            <AnimateSection
-                                                className={`text-start `}
-                                                id={`icon-stack-` + item.id}
-                                                parentId="tech-stack"
-                                                inAnimate={`animate-fade-in delay-${
-                                                    200 * index
-                                                }`}
-                                                outAnimate="animate-go-away"
-                                                bottom={600}
-                                            >
-                                                <div className={`relative -z-${index+1}`}>
-                                                    <div
-                                                        onMouseEnter={
-                                                            onMouseEnter
-                                                        }
-                                                        onMouseLeave={
-                                                            onMouseLeave
-                                                        }
-                                                        className="absolute bg-transparent  top-0 left-0 z-20 h-full w-full"
-                                                    ></div>
-                                                    <TechStack
-                                                        captionId={
-                                                            `caption-id-` +
-                                                            item.id
-                                                        }
-                                                        borderRadius="10px"
-                                                        className="icon-stack p-2 dark:bg-gray-dark bg-slate-50 rounded-lg hover:border-primary dark:hover:border-primary  hover:border-2 border-2 dark:border-dark border-bodydark2 cursor-pointer flex items-center justify-center"
-                                                    >
-                                                        <div
-                                                            className=""
-                                                            dangerouslySetInnerHTML={{
-                                                                __html: item.icon,
-                                                            }}
-                                                        />
-                                                    </TechStack>
-                                                </div>
-                                                <p
-                                                    id={`caption-id-` + item.id}
-                                                    className="icon-caption z-30 border-2 dark:border-2  border-bodydark2  text-sm absolute  dark:font-thin font-medium text-center mt-2 bg-slate-50 dark:bg-gray-dark p-1 invisible rounded"
-                                                >
-                                                    {item.title}
-                                                </p>
-                                            </AnimateSection>
-                                        </div>
-                                    )
-                                )}
-                            </div>
-                        </div>
-                        <div className=" lg:mx-6">
-                            <AnimateSection
-                                className="text-start"
-                                id="be-title"
-                                parentId="tech-stack"
-                                inAnimate="animate-fade-on"
-                                outAnimate="animate-go-away"
-                                bottom={600}
-                            >
-                                <h2 className="text-lg dark:text-white text-dark">{t("landing.backend")}</h2>
-                            </AnimateSection>
-                            <div className="grid lg:grid-cols-4 md:grid-cols-4 grid-cols-3 gap-5 md:gap-3 mt-4 mb-14">
-                                {techStack.backend.map(
-                                    (item: any, index: number) => (
-                                        <div
-                                            key={item.id}
-                                            id={`icon-stack-` + item.id}
-                                            className={`flex-row justify-center  relative `}
-                                            style={{
-                                                zIndex:100-index
-                                            }}
-                                        >
-                                            <AnimateSection
-                                                className={`text-start `}
-                                                id={`icon-stack-` + item.id}
-                                                parentId="tech-stack"
-                                                inAnimate={`animate-fade-in delay-${
-                                                    200 * index
-                                                }`}
-                                                outAnimate="animate-go-away"
-                                                bottom={600}
-                                            >
-                                                <div className={`relative -z-${index+1}`}>
-                                                    <div
-                                                        onMouseEnter={
-                                                            onMouseEnter
-                                                        }
-                                                        onMouseLeave={
-                                                            onMouseLeave
-                                                        }
-                                                        className="absolute bg-transparent  top-0 left-0 z-999 h-full w-full"
-                                                    ></div>
-                                                    <TechStack
-                                                        captionId={
-                                                            `caption-id-` +
-                                                            item.id
-                                                        }
-                                                        borderRadius="10px"
-                                                        className="icon-stack p-2 dark:bg-gray-dark bg-slate-50 rounded-lg hover:border-primary dark:hover:border-primary  hover:border-2 border-2 dark:border-dark border-bodydark2 cursor-pointer flex items-center justify-center"
-                                                    >
-                                                        <div
-                                                            className=""
-                                                            dangerouslySetInnerHTML={{
-                                                                __html: item.icon,
-                                                            }}
-                                                        />
-                                                    </TechStack>
-                                                </div>
-                                                <p
-                                                    id={`caption-id-` + item.id}
-                                                    className="icon-caption z-999 border-2 dark:border-2  border-bodydark2  text-sm absolute invisible   dark:font-thin font-medium text-center mt-2 bg-slate-50 dark:bg-gray-dark p-1 rounded"
-                                                >
-                                                    {item.title}
-                                                </p>
-                                            </AnimateSection>
-                                        </div>
-                                    )
-                                )}
-                            </div>
-                        </div>
-                        <div className=" lg:mx-6">
-                            <AnimateSection
-                                className="text-start"
-                                id="ot-title"
-                                parentId="tech-stack"
-                                inAnimate="animate-fade-on"
-                                outAnimate="animate-go-away"
-                                bottom={600}
-                            >
-                                <h2 className="text-lg dark:text-white text-dark">{t("landing.others")}</h2>
-                            </AnimateSection>
-                            <div className="grid lg:grid-cols-4 md:grid-cols-4 grid-cols-3 gap-5 md:gap-3 mt-4 mb-14">
-                                {techStack.others.map(
-                                    (item: any, index: number) => (
-                                        <div
-                                            key={item.id}
-                                            id={`icon-stack-` + item.id}
-                                            className={`flex-row justify-center  relative `}
-                                            style={{
-                                                zIndex:100-index
-                                            }}
-                                        >
-                                            <AnimateSection
-                                                className={`text-start `}
-                                                id={`icon-stack-` + item.id}
-                                                parentId="tech-stack"
-                                                inAnimate={`animate-fade-in delay-${
-                                                    200 * index
-                                                }`}
-                                                outAnimate="animate-go-away"
-                                                bottom={600}
-                                            >
-                                                <div className={`relative -z-${index+1}`}>
-                                                    <div
-                                                        onMouseEnter={
-                                                            onMouseEnter
-                                                        }
-                                                        onMouseLeave={
-                                                            onMouseLeave
-                                                        }
-                                                        className="absolute bg-transparent  top-0 left-0 z-999 h-full w-full"
-                                                    ></div>
-                                                    <TechStack
-                                                        captionId={
-                                                            `caption-id-` +
-                                                            item.id
-                                                        }
-                                                        borderRadius="10px"
-                                                        className="icon-stack p-2 dark:bg-gray-dark rounded-lg bg-slate-50 hover:border-primary dark:hover:border-primary  hover:border-2 border-2 dark:border-dark border-bodydark2 cursor-pointer flex items-center justify-center"
-                                                    >
-                                                        <div
-                                                            className=""
-                                                            dangerouslySetInnerHTML={{
-                                                                __html: item.icon,
-                                                            }}
-                                                        />
-                                                    </TechStack>
-                                                </div>
-                                                <p
-                                                    id={`caption-id-` + item.id}
-                                                    className="icon-caption z-999 border-2 dark:border-2  border-bodydark2  text-sm absolute invisible   dark:font-thin font-medium text-center mt-2 bg-slate-50 dark:bg-gray-dark p-1 rounded"
-                                                >
-                                                    {item.title}
-                                                </p>
-                                            </AnimateSection>
-                                        </div>
-                                    )
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+          </div>
+        </div>
+      </div>
 
-            <div
-                id="projects"
-                ref={projectRef}
-                className="w-full py-10 lg:py-2 md:py-2 relative grid place-content-center grid-cols-1 z-10 min-h-screen"
-            >
+      <div
+        id="projects"
+        ref={projectRef}
+        className="w-full py-10 lg:py-2 md:py-2 relative grid place-content-center grid-cols-1 z-10 min-h-screen"
+      >
+        <AnimateSection
+          className="text-3xl py-10 text-center font-bold dark:text-white text-dark-custom-200"
+          id="prj"
+          parentId="prj"
+          inAnimate="animate-fade-on"
+          outAnimate="animate-go-away"
+          bottom={0}
+        >
+          {t("landing.projects")}
+        </AnimateSection>
+        <div className="w-full" id="projects-container">
+          <div className="grid grid-cols-1  lg:grid-cols-3 md:grid-cols-3 gap-4 ">
+            {projects.data.map((item: any, index: number) => (
+              <div key={index + "-projects"} className="lg:mx-6 ">
                 <AnimateSection
-                    className="text-3xl py-10 text-center font-bold dark:text-white text-dark-custom-200"
-                    id="prj"
-                    parentId="prj"
-                    inAnimate="animate-fade-on"
-                    outAnimate="animate-go-away"
-                    bottom={0}
+                  className=""
+                  id={`project-content-` + item.id}
+                  parentId={
+                    isMobile
+                      ? `project-content-` + item.id
+                      : `projects-container`
+                  }
+                  inAnimate={`animate-fade-in delay-${
+                    isMobile ? 0 : 500 * index
+                  }`}
+                  outAnimate="animate-go-away"
+                  bottom={600}
                 >
-                    {t("landing.projects")}
+                  <Card3D
+                    title={item.title}
+                    category={item.category.name}
+                    image_url={item.image_url}
+                    slug={item.slug}
+                  />
                 </AnimateSection>
-                <div className="w-full" id="projects-container">
-                    <div className="grid grid-cols-1  lg:grid-cols-3 md:grid-cols-3 gap-4 ">
-                        {projects.data.map((item: any, index: number) => (
-                            <div key={index + "-projects"} className="lg:mx-6 ">
-                                <AnimateSection
-                                    className=""
-                                    id={`project-content-` + item.id}
-                                    parentId={
-                                        isMobile
-                                            ? `project-content-` + item.id
-                                            : `projects-container`
-                                    }
-                                    inAnimate={`animate-fade-in delay-${
-                                        isMobile ? 0 : 500 * index
-                                    }`}
-                                    outAnimate="animate-go-away"
-                                    bottom={600}
-                                >
-                                    <Card3D
-                                        title={item.title}
-                                        category={item.category.name}
-                                        image_url={item.image_url}
-                                        slug={item.slug}
-                                    />
-                                </AnimateSection>
-                            </div>
-                        ))}
-                    </div>
-                    <div className="flex mt-10">
-                        <div className="w-full text-center">
-                            <AnimateSection
-                                className=""
-                                id="more-project"
-                                parentId={
-                                    isMobile ? "more-project" : "projects"
-                                }
-                                inAnimate="animate-fade-on delay-1500"
-                                outAnimate="animate-go-away"
-                                bottom={600}
-                            >
-                                <Button
-                                    onClick={() => {
-                                        dispatch(
-                                            setCategoryFilter({
-                                                category: 1,
-                                            })
-                                        );
-                                        navigate(localePath("/blogs"));
-                                    }}
-                                    borderRadius="1.75rem"
-                                    className="bg-white px-10 py-2
+              </div>
+            ))}
+          </div>
+          <div className="flex mt-10">
+            <div className="w-full text-center">
+              <AnimateSection
+                className=""
+                id="more-project"
+                parentId={isMobile ? "more-project" : "projects"}
+                inAnimate="animate-fade-on delay-1500"
+                outAnimate="animate-go-away"
+                bottom={600}
+              >
+                <Button
+                  onClick={() => {
+                    dispatch(
+                      setCategoryFilter({
+                        category: 1,
+                      }),
+                    );
+                    navigate(localePath("/blogs"));
+                  }}
+                  borderRadius="1.75rem"
+                  className="bg-white px-10 py-2
                                             dark:hover:bg-primary
                                         dark:bg-slate-900 text-black font-extrabold dark:text-white border-neutral-200 dark:border-slate-800"
-                                >
-                                    {t("landing.moreProjects")}
-                                </Button>
-                            </AnimateSection>
-                        </div>
-                    </div>
-                </div>
+                >
+                  {t("landing.moreProjects")}
+                </Button>
+              </AnimateSection>
             </div>
-            <div
-                id="get-in-touch"
-                ref={getInTouchRef}
-                className="w-full lg:py-20 md:py-20 py-30 grid grid-cols-1 place-content-center mx-auto  min-h-screen relative z-10"
-            >
-                <CardGetInTouch />
-            </div>
-        </>
-    );
+          </div>
+        </div>
+      </div>
+      <div
+        id="get-in-touch"
+        ref={getInTouchRef}
+        className="w-full lg:py-20 md:py-20 py-30 grid grid-cols-1 place-content-center mx-auto  min-h-screen relative z-10"
+      >
+        <CardGetInTouch />
+      </div>
+    </>
+  );
 };
 
 export default LandingPage;

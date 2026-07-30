@@ -138,7 +138,7 @@ class PageMetaService
 
     private function title(?string $pageTitle): string
     {
-        $default = SeoSetting::get('default_title', 'ivd.my.id');
+        $default = SeoSetting::get('default_title', 'Irvan Denata');
 
         if (! $pageTitle) {
             return $default;
@@ -155,7 +155,7 @@ class PageMetaService
     private function common(): array
     {
         return [
-            'site_name' => SeoSetting::get('site_name', 'ivd.my.id'),
+            'site_name' => SeoSetting::get('site_name', 'Irvan Denata'),
             // og:locale and <html lang> must match the URL that was requested,
             // not just the site-wide default.
             'locale' => $this->locale === 'en'
@@ -342,7 +342,7 @@ class PageMetaService
             '@context' => 'https://schema.org',
             '@type' => 'WebSite',
             '@id' => $baseUrl . '/#website',
-            'name' => SeoSetting::get('site_name', 'ivd.my.id'),
+            'name' => SeoSetting::get('site_name', 'Irvan Denata'),
             'url' => $baseUrl . '/',
             'description' => SeoSetting::get('default_description', ''),
             'inLanguage' => $this->schemaLanguage(),

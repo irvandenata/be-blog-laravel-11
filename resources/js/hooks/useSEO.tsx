@@ -21,7 +21,7 @@ interface SEOProps {
 const metaContent = (selector: string, fallback: string): string =>
   document.querySelector<HTMLMetaElement>(selector)?.content || fallback;
 
-const SITE_NAME = metaContent('meta[property="og:site_name"]', "ivd.my.id");
+const SITE_NAME = metaContent('meta[property="og:site_name"]', "Irvan Denata");
 const BASE_URL = window.location.origin;
 const DEFAULT_IMAGE = `${BASE_URL}/og-default.svg`;
 
